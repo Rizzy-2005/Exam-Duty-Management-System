@@ -18,6 +18,10 @@ app.get('/', (req,res) => {
   res.sendFile(path.join(__dirname,"./views/login.html"));
 });
 
+app.get('/addTeacher', (req,res) => {
+  res.sendFile(path.join(__dirname,"./views/addTeacher.html"));
+});
+
 app.listen(PORT, (err) => {
   if(err) throw err;
   console.log(`The server has hosted on http://localhost:${PORT}`);
