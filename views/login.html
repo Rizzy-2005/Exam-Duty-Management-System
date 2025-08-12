@@ -29,6 +29,7 @@
     const usernamePattern = /^[a-zA-Z0-9_-]{3,20}$/;
     const passwordPattern = /^.{6,}$/;
 
+    //Event Listener for Submitting Form
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -41,6 +42,7 @@
         return;
       }
 
+      //Disable button to ensure extra clicks dont happen. 
       btn.disabled = true;
       btn.textContent = "Logging in...";
 
@@ -61,6 +63,7 @@
       } catch (err) {
         showMessage("Network error. Please try again.", "error");
       } finally {
+        //Re-enable button
         btn.disabled = false;
         btn.textContent = "Login";
       }
