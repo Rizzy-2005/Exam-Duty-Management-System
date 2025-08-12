@@ -3,6 +3,7 @@ const express = require("express");
 const path = require("path");
 const connectDb = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
+const coeRoutes = require("./routes/coeRoutes");
 
 //Initializing the express app
 const app = express();
@@ -14,6 +15,7 @@ connectDb();
 //Using different routes and static pages
 app.use(express.static(path.join(__dirname, "./views")));
 app.use('/login', authRoutes);
+app.use('/coe', coeRoutes);
 
 const PORT = 3000;
 
