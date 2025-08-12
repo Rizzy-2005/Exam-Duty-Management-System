@@ -10,9 +10,7 @@ exports.login = async (req, res) => {
     res.json({
         success: true,
         message: 'User Successfully Logged in',
-        user: {
-            role: user.role
-        }
+        role: user.role
     });
     } else {
     res.status(401).json({

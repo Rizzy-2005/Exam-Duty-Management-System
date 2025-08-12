@@ -12,17 +12,17 @@ app.use(express.json());
 connectDb();
 
 //Using different routes and static pages
-app.use(express.static(path.join(__dirname, "./public")));
+app.use(express.static(path.join(__dirname, "./views")));
 app.use('/login', authRoutes);
 
 const PORT = 3000;
 
 app.get('/', (req,res) => {
-  res.sendFile(path.join(__dirname,"./views/login.html"));
+  res.redirect("/login.html");
 });
 
 app.get('/addTeacher', (req,res) => {
-  res.sendFile(path.join(__dirname,"./views/addTeacher.html"));
+  res.redirect("/addTeacher.html");
 });
 
 app.listen(PORT, (err) => {

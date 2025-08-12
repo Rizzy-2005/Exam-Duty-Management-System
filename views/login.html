@@ -57,6 +57,13 @@
 
         if (data.success) {
           showMessage(data.message || "Login successful!", "success");
+          setTimeout(() => {
+            if (data.role === "COE") {
+              window.location.href = "/addTeacher.html";  
+            }else {
+              // window.location.href = ""; 
+            }
+          }, 1000);
         } else {
           showMessage(data.message || "Invalid credentials", "error");
         }
