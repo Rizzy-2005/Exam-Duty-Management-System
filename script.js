@@ -108,26 +108,29 @@ document.getElementById("addTeacherBtn").addEventListener("click", function (e) 
 
   //Send data to the server
   fetch("/add-teacher", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(teacherData) //convert to json-str and add to body
-  })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error("Failed to add teacher");
-    }
-    return response.json();
-  })
-  .then(data => {
-    alert("Teacher added successfully!");
-    teacherModal.style.display = 'none';
-  })
-  .catch(error => {
-    console.error("Error:", error);
-    alert("An error occurred while adding the teacher.");
-  });
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(teacherData)
+})
+.then(async (response) => {
+  const data = await response.json();
+  if (!response.ok) {
+    // Show server message if present, else generic error
+    alert(data.message || "Failed to add teacher");
+    throw new Error(data.message || "Failed to add teacher");
+  }
+  return data;
+})
+.then(data => {
+  alert(data.message || "Teacher added successfully!");
+  teacherModal.style.display = 'none';
+})
+.catch(error => {
+  console.error("Error:", error);
+  // Optional: alert already shown above, so maybe no need here
+});
 });
 
   //toggle password visibilty
