@@ -25,6 +25,7 @@
     const message = document.getElementById('loginMessage');
     const btn = document.getElementById('loginBtn');
 
+    //regex
     const usernamePattern = /^[a-zA-Z0-9_-]{3,20}$/;
     const passwordPattern = /^.{6,}$/;
 
@@ -65,6 +66,7 @@
       }
     });
 
+    //Show messages underneath the login button
     function showMessage(msg, type) {
       message.textContent = msg;
       message.className = `message ${type}`;

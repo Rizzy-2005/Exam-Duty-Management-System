@@ -1,6 +1,6 @@
 const Teacher = require('./models/teacherModel');
 
-
+//Basic Validation
 function validateLoginInput(req, res, next) {
     const { username, password } = req.body;
 
@@ -19,6 +19,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'login.html'));
 });
 
+// Handle Login
 app.post('/login', validateLoginInput, async (req, res, next) => {
     const { username, password } = req.body;
 
