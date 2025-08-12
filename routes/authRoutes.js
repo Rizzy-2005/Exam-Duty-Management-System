@@ -1,10 +1,9 @@
 const Teacher = require('./models/teacherModel');
 
-// Minimal backend validation (security only)
+
 function validateLoginInput(req, res, next) {
     const { username, password } = req.body;
 
-    // Basic empty check — only essential one
     if (!username?.trim() || !password) {
         return res.status(400).json({
             success: false,
@@ -12,7 +11,6 @@ function validateLoginInput(req, res, next) {
         });
     }
 
-    // Trim username before DB lookup
     req.body.username = username.trim();
     next();
 }
