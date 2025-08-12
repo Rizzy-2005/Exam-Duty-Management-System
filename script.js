@@ -16,6 +16,7 @@ const tid = document.getElementById('teacherid');
 const nameRegex = /^[A-Za-z\s]{3,}$/; 
 const idRegex = /^[0-9]{10}$/; 
 
+//to toggle between menu1 and menu2
 function showStep1() {
   step1.style.display = 'flex';
   step1.style.flexDirection = 'column';
@@ -36,13 +37,13 @@ nextBtn.addEventListener('click', (event) => {
   event.preventDefault();
   let hasError = false;
 
-
+  //validating full name
   if (!nameRegex.test(fname.value.trim())) {
     alert("Please enter a valid name (min 3 letters).");
     hasError = true;
   }
 
-
+  //validating teacher ID
   if (!idRegex.test(tid.value.trim())) {
     alert("Please enter a valid 10-digit Teacher ID.");
     hasError = true;
@@ -71,29 +72,28 @@ window.addEventListener('click', (event) => {
     teacherModal.style.display = 'none';
   }
 });
-
+//to check password strength
 function checkPasswordStrength(password) {
-    const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+    const strongRegex =  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{9,}$/;
 
     if (!strongRegex.test(password)) {
       return false;
     }
     return true;
   }
-
 document.getElementById("addTeacherBtn").addEventListener("click", function (e) {
     const password = document.getElementById("password").value;
     const confirmPassword = document.getElementById("confirmPassword").value;
 
     if (password !== confirmPassword) {
       alert("Passwords do not match!");
-      e.preventDefault(); // Stops form submission
+      e.preventDefault(); //Stops form submission
       return;
     }
 
     if (!checkPasswordStrength(password)) {
       alert("Weak password! Must be at least 8 characters and include uppercase, lowercase, number, and special character.");
-      e.preventDefault(); // Stops form submission
+      e.preventDefault(); 
       return;
     }
 
@@ -106,13 +106,13 @@ document.getElementById("addTeacherBtn").addEventListener("click", function (e) 
     password: password
   };
 
-  // Send data to the server
+  //Send data to the server
   fetch("/add-teacher", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify(teacherData)
+    body: JSON.stringify(teacherData) //convert to json-str and add to body
   })
   .then(response => {
     if (!response.ok) {
@@ -130,12 +130,13 @@ document.getElementById("addTeacherBtn").addEventListener("click", function (e) 
   });
 });
 
+  //toggle password visibilty
   document.getElementById('showPassword').addEventListener('change', function () {
   const passwordField = document.getElementById('password');
   passwordField.type = this.checked ? 'text' : 'password';
 });
 
-// Show/Hide Confirm Password
+//toggle confirm password visibility
 document.getElementById('showConfirmPassword').addEventListener('change', function () {
   const confirmPasswordField = document.getElementById('confirmPassword');
   confirmPasswordField.type = this.checked ? 'text' : 'password';
