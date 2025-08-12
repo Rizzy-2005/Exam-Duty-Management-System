@@ -4,8 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login</title>
-<link rel="stylesheet" href="./login.css">
-
+  <link rel="stylesheet" href="./login.css">
 </head>
 <body>
 
@@ -26,23 +25,18 @@
     const message = document.getElementById('loginMessage');
     const btn = document.getElementById('loginBtn');
 
-    // Regex patterns
     const usernamePattern = /^[a-zA-Z0-9_-]{3,20}$/;
-    const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/;
+    const passwordPattern = /^.{6,}$/;
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const usernameValue = username.value.trim();
-      const passwordValue = password.value;
-
-      // Validation checks
-      if (!usernamePattern.test(usernameValue)) {
-        showMessage("Username must be 3-20 characters and can include letters, numbers, _ or -", "error");
+      if (!usernamePattern.test(username.value)) {
+        showMessage("Username must be 3-20 chars (letters, numbers, _ or -)", "error");
         return;
       }
-      if (!passwordPattern.test(passwordValue)) {
-        showMessage("Password must be at least 8 characters, with letters and numbers", "error");
+      if (!passwordPattern.test(password.value)) {
+        showMessage("Password must be at least 6 characters", "error");
         return;
       }
 
@@ -53,23 +47,22 @@
         const res = await fetch('/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: usernameValue, password: passwordValue })
+          body: JSON.stringify({ username: username.value, password: password.value })
         });
 
         const data = await res.json();
 
         if (data.success) {
           showMessage(data.message || "Login successful!", "success");
-          form.reset();
         } else {
           showMessage(data.message || "Invalid credentials", "error");
         }
       } catch (err) {
         showMessage("Network error. Please try again.", "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Login";
       }
-
-      btn.disabled = false;
-      btn.textContent = "Login";
     });
 
     function showMessage(msg, type) {
