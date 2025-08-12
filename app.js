@@ -23,10 +23,6 @@ app.get('/', (req,res) => {
   res.redirect("/login.html");
 });
 
-app.get('/addTeacher', (req,res) => {
-  res.redirect("/addTeacher.html");
-});
-
 app.listen(PORT, (err) => {
   if(err) throw err;
   console.log(`The server has hosted on http://localhost:${PORT}`);
