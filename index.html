@@ -71,11 +71,18 @@
     <div class="teacher-form step" id="step2">
       <h2>Set Password</h2>
       <div class="form-group">
-        <input type="password" id="password" placeholder="Password" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <label>
+        <input type="checkbox" id="showPassword"> Show Password
+      </label>
       </div>
+
       <div class="form-group">
-        <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
-      </div>
+  <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+  <label>
+    <input type="checkbox" id="showConfirmPassword"> Show Confirm Password
+  </label>
+</div>
       <div class="form-actions">
         <button id="backBtn" class="btn back-btn">Back</button>
         <button id="addTeacherBtn" class="btn add-btn">Add Teacher</button>
