@@ -103,7 +103,7 @@ button:active {
 }
 
 .message.success {
-    color: green;
+    color: rgb(1, 50, 1);
 }
 
 @media (max-width: 480px) {
