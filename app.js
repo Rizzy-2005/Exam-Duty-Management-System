@@ -2,15 +2,18 @@
 const express = require("express");
 const path = require("path");
 const connectDb = require("./config/db");
+const authRoutes = require("./routes/authRoutes");
 
 //Initializing the express app
 const app = express();
+app.use(express.json());
 
 //Connect to mongodb
 connectDb();
 
 //Using different routes and static pages
 app.use(express.static(path.join(__dirname, "./public")));
+app.use('/login', authRoutes);
 
 const PORT = 3000;
 
