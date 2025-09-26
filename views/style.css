@@ -1,0 +1,139 @@
+:root {
+  --radius: 8px;
+  --button: #1a73e8;
+}
+
+.container {
+  display: flex;
+  flex-direction: column; /* stack elements vertically */
+  align-items: center;    /* center horizontally */
+  justify-content: center; /* center vertically */
+  min-height: 100vh;      /* full screen height */
+}
+
+body {
+  font-family: Arial, sans-serif;
+}
+
+.open-modal-btn {
+  padding: 10px 16px;
+  background: var(--button);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: var(--radius);
+  width: 350px;
+  animation: fadeIn 0.3s ease;
+}
+
+.teacher-form {
+  display: none;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.teacher-form.active {
+  display: flex;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+input, select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: var(--radius);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.cancel-btn {
+  background: #9ca3af;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #6b7280;
+}
+
+.next-btn {
+  background: var(--button);
+  color: white;
+}
+
+.next-btn:hover {
+  background: #0d5adf;
+}
+
+.back-btn {
+  background: #9ca3af;
+  color: white;
+}
+
+.back-btn:hover {
+  background: #6b7280;
+}
+
+.add-btn {
+  background: var(--button);
+  color: white;
+}
+
+.add-btn:hover {
+  background: #0d5adf;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.form-group input[type="password"],
+.form-group input[type="text"] {
+  width: 100%; /* make inputs same length */
+  box-sizing: border-box;
+}
+
+.form-group label {
+  font-size: 14px;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
