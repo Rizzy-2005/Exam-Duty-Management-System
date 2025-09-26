@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Exam Schedule</title>
+    <link rel="stylesheet" href="viewSchedule.css" />
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header fade-in">
+            <div class="header-left">
+                <a href="#" class="back-button" onclick="goBack()">
+                    ←
+                </a>
+                <h1>My Exam Schedule</h1>
+            </div>
+            <div class="user-info">
+                <span>Prof. Johnson</span>
+                <div class="user-avatar">PJ</div>
+            </div>
+        </header>
+
+        <!-- Schedule Container -->
+        <div class="schedule-container fade-in">
+            <div class="schedule-header">
+                <h2>Allocated Exams</h2>
+                <span class="schedule-count" id="scheduleCount">8 Exams</span>
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="filterSchedule('all')">All Exams</button>
+                <button class="filter-btn" onclick="filterSchedule('morning')">Morning</button>
+                <button class="filter-btn" onclick="filterSchedule('afternoon')">Afternoon</button>
+            </div>
+
+            <!-- Schedule Grid -->
+            <div class="schedule-grid" id="scheduleGrid">
+                <div class="schedule-item stagger-in" onclick="viewExamDetails('2024-12-15')">
+                    <div class="date-info">
+                        <div class="date-day">15</div>
+                        <div class="date-month">Dec</div>
+                    </div>
+                    <div class="session-badge session-morning">Morning</div>
+                    <div class="classroom-info">
+                        <div class="classroom-number">A-101</div>
+                        <div class="classroom-building">Main Block</div>
+                    </div>
+                    <div class="schedule-arrow">→</div>
+                </div>
+
+                <div class="schedule-item stagger-in" onclick="viewExamDetails('2024-12-16')">
+                    <div class="date-info">
+                        <div class="date-day">16</div>
+                        <div class="date-month">Dec</div>
+                    </div>
+                    <div class="session-badge session-afternoon">Afternoon</div>
+                    <div class="classroom-info">
+                        <div class="classroom-number">B-205</div>
+                        <div class="classroom-building">Tech Block</div>
+                    </div>
+                    <div class="schedule-arrow">→</div>
+                </div>
+
+                <div class="schedule-item stagger-in" onclick="viewExamDetails('2024-12-18')">
+                    <div class="date-info">
+                        <div class="date-day">18</div>
+                        <div class="date-month">Dec</div>
+                    </div>
+                    <div class="session-badge session-morning">Morning</div>
+                    <div class="classroom-info">
+                        <div class="classroom-number">C-301</div>
+                        <div class="classroom-building">Science Block</div>
+                    </div>
+                    <div class="schedule-arrow">→</div>
+                </div>
+
+                <div class="schedule-item stagger-in" onclick="viewExamDetails('2024-12-20')">
+                    <div class="date-info">
+                        <div class="date-day">20</div>
+                        <div class="date-month">Dec</div>
+                    </div>
+                    <div class="session-badge session-afternoon">Afternoon</div>
+                    <div class="classroom-info">
+                        <div class="classroom-number">A-203</div>
+                        <div class="classroom-building">Main Block</div>
+                    </div>
+                    <div class="schedule-arrow">→</div>
+                </div>
+
+                <div class="schedule-item stagger-in" onclick="viewExamDetails('2024-12-22')">
+                    <div class="date-info">
+                        <div class="date-day">22</div>
+                        <div class="date-month">Dec</div>
+                    </div>
+                    <div class="session-badge session-morning">Morning</div>
+                    <div class="classroom-info">
+                        <div class="classroom-number">D-102</div>
+                        <div class="classroom-building">IT Block</div>
+                    </div>
+                    <div class="schedule-arrow">→</div>
+                </div>
+
+                <div class="schedule-item stagger-in" onclick="viewExamDetails('2024-12-24')">
+                    <div class="date-info">
+                        <div class="date-day">24</div>
+                        <div class="date-month">Dec</div>
+                    </div>
+                    <div class="session-badge session-afternoon">Afternoon</div>
+                    <div class="classroom-info">
+                        <div class="classroom-number">B-401</div>
+                        <div class="classroom-building">Tech Block</div>
+                    </div>
+                    <div class="schedule-arrow">→</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions Bar -->
+        <div class="actions-bar fade-in">
+            <a href="#" class="action-btn btn-secondary" onclick="goToHome()">
+                🏠 Back to Home
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Filter functionality
+        function filterSchedule(type) {
+            const buttons = document.querySelectorAll('.filter-btn');
+            const items = document.querySelectorAll('.schedule-item');
+            
+            // Update active button
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Filter items
+            items.forEach(item => {
+                const sessionBadge = item.querySelector('.session-badge');
+                const isMorning = sessionBadge.classList.contains('session-morning');
+                
+                switch(type) {
+                    case 'morning':
+                        item.style.display = isMorning ? 'grid' : 'none';
+                        break;
+                    case 'afternoon':
+                        item.style.display = !isMorning ? 'grid' : 'none';
+                        break;
+                    default:
+                        item.style.display = 'grid';
+                }
+            });
+
+            // Update count
+            const visibleItems = document.querySelectorAll('.schedule-item[style="display: grid"], .schedule-item:not([style*="display: none"])').length;
+            document.getElementById('scheduleCount').textContent = `${visibleItems} Exams`;
+        }
+
+        // Navigation functions
+        function viewExamDetails(date) {
+            // Simulate navigation to exam details page
+            alert(`Navigating to details for exam on ${date}`);
+            // In a real app, you would navigate to: `/exam-details?date=${date}`
+        }
+
+        function goBack() {
+            // Simulate going back to previous page
+            history.back();
+        }
+
+        function goToHome() {
+            // Simulate navigation to home page
+            window.location.href = '/home';
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add any initialization logic here
+            console.log('Schedule page loaded');
+        });
+    </script>
+</body>
+</html>
