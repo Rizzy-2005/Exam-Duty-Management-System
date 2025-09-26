@@ -171,25 +171,14 @@
     }
 
     // Navigation functions
-    function viewExamDetails(date) {
-        // Simulate navigation to exam details page
-        alert(`Navigating to details for exam on ${date}`);
-        // In a real app, you would navigate to: `/exam-details?date=${date}`
-    }
-
-    function goBack() {
-        // Simulate going back to previous page
-        history.back();
-    }
 
     function goToHome() {
-        // Simulate navigation to home page
         window.location.href = '/home.html';
     }
 
-    // Initialize page
+    goBack = goToHome;
+
     document.addEventListener('DOMContentLoaded', function() {
-        // Add any initialization logic here
         console.log('Schedule page loaded');
     });
 </script>
