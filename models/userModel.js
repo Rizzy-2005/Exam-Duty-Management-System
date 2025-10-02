@@ -1,4 +1,4 @@
-//Defining teacher schema
+//Defining users schema
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
   gender: { type: String, required: true, enum: ['Male', 'Female', 'Other'] },
   dob: { type: Date, required: true },
   role: { type: String, required: true, enum: ['Teacher', 'COE'] },
-  userId: {type: String, required: true, unique: true}
+  userId: { type: String, required: true, unique: true }
 }, { timestamps: true });
 
 module.exports = mongoose.model("users", userSchema);
