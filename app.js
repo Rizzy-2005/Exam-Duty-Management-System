@@ -4,6 +4,7 @@ const path = require("path");
 const connectDb = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const coeRoutes = require("./routes/coeRoutes");
+const teachRoutes = require("./routes/teacherRoutes");
 
 //Initializing the express app
 const app = express();
@@ -16,6 +17,7 @@ connectDb();
 app.use(express.static(path.join(__dirname, "./views")));
 app.use('/login', authRoutes);
 app.use('/coe', coeRoutes);
+app.use('/teacher',teachRoutes);
 
 const PORT = 3000;
 
