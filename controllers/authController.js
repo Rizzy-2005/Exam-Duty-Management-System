@@ -10,7 +10,9 @@ exports.login = async (req, res) => {
     res.json({
         success: true,
         message: 'User Successfully Logged in',
-        role: user.role
+        role: user.role,
+        userId: user._id,
+        userName: user.name, // to test backend fetching in teacher
     });
     } else {
     res.status(401).json({

@@ -12,65 +12,107 @@
         <header class="header fade-in">
             <h1>Exam Scheduling Portal</h1>
             <div class="user-info">
-                <span>Welcome, Prof. Johnson</span>
-                <div class="user-avatar">PJ</div>
+                <span id="name">Welcome, Prof. Johnson</span>
+                <div class="user-avatar" id="avatar">PJ</div>
             </div>
         </header>
 
-        <!-- Main Content -->
-        <div class="main-layout fade-in">
-            <!-- Exam List Container -->
+<!-- Logout -->
+    <div class="modal-overlay" id="logoutModal">
+        <div class="modal">
+            <h3>Confirm Logout</h3>
+            <p>Are you sure you want to logout?</p>
+            <div class="modal-buttons">
+                <button class="modal-btn btn-cancel" onclick="hideLogout()">Cancel</button>
+                <button class="modal-btn btn-confirm" onclick="confirmLogout()">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-layout fade-in">
+        <!-- Exam List Container -->
         <div class="exam-container">
             <div class="exam-header">
                 <h2>Notifications</h2>
                 <span class="exam-count" id="examCount">0 Notification</span>
                 </div>
 
-                <div class="loading" id="loading">
-                    <div class="spinner"></div>
-                    <p>Loading your exams...</p>
-                </div>
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Loading your exams...</p>
+        </div>
 
-                <div class="exam-list" id="examList">
-                    <div class="exam-item">
-                        <div class="exam-info">
-                            <div class="exam-title">No Notification</div>
-                                <div class="exam-details">
-                                    <span>Nothing New</span>
+        <div class="exam-list" id="examList">
+            <div class="exam-item">
+                <div class="exam-info">
+                    <div class="exam-title">No Notification</div>
+                        <div class="exam-details">
+                            <span>Nothing New</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-            <!-- Notification Bar -->
-            <div class="notification-bar pulse" onclick="viewSwapRequests()">
-                <span class="notification-icon">🔔</span>
-                <div class="notification-count" id="requestCount">5</div>
-                <p class="notification-text">Swap Requests Pending</p>
-                <button class="view-requests-btn">View All</button>
-            </div>
+        <!-- Notification Bar -->
+        <div class="notification-bar pulse" onclick="viewSwapRequests()">
+            <span class="notification-icon">🔔</span>
+            <div class="notification-count" id="requestCount">5</div>
+            <p class="notification-text">Swap Requests Pending</p>
+            <button class="view-requests-btn">View All</button>
         </div>
+    </div>
 
-        <!-- Navigation Buttons -->
-        <div class="nav-buttons fade-in">
-            <button class="nav-button btn-primary" onclick="navigateToSchedule()">
-                <img src="/public/schedule.png" class="button-png"> <br> View Schedule
-            </button>
-            <button class="nav-button btn-secondary" onclick="navigateToExams()">
-                <img src="/public/exam.png" class="button-png"> <br> Exam Timetable
-            </button>
-            <button class="nav-button btn-success" onclick="navigateToReports()">
-                <img class="button-png" src="/public/history.png">  <br> History
-            </button>
-        </div>
-    </div> 
+    <!-- Navigation Buttons -->
+    <div class="nav-buttons fade-in">
+        <button class="nav-button btn-primary" onclick="navigateToSchedule()">
+            <img src="/public/schedule.png" class="button-png"> <br> View Schedule
+        </button>
+        <button class="nav-button btn-secondary" onclick="navigateToExams()">
+            <img src="/public/exam.png" class="button-png"> <br> Exam Timetable
+        </button>
+        <button class="nav-button btn-success" onclick="navigateToReports()">
+            <img class="button-png" src="/public/history.png">  <br> History
+        </button>
+    </div>
+</div> 
 
 <script>
-    function navigateToSchedule(){
-    // Navigate to the schedule page
-    window.location.href = '/viewSchedule.html';
-} 
+
+document.addEventListener('DOMContentLoaded',function(){
+
+    name = localStorage.getItem('teacherName');
+    const namespan = document.getElementById('name');
+    const avatarspan = document.getElementById('avatar');
+
+    namespan.textContent = `${name}`;
+    const initials = userFullName.split(' ')
+        .map(word => word.charAt(0))
+        .join('')
+        .toUpperCase();
+
+    userAvatarDiv.textContent = initials;
+})
+
+function navigateToSchedule(){
+// Navigate to the schedule page
+window.location.href = '/viewSchedule.html';
+}    
+
+// Click avatar to show logout confirmation
+document.getElementById('avatar').addEventListener('click', function() {
+    document.getElementById('logoutModal').classList.add('show');
+});
+
+function hideLogout() {
+    document.getElementById('logoutModal').classList.remove('show');
+}
+
+function confirmLogout() {
+    localStorage.clear();
+    window.location.href = '/login.html';
+}
 </script>
 </body>
 
