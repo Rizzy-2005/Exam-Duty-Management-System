@@ -171,6 +171,10 @@
       });
 
       const data = await result.json();
+      console.log(data) //debug errors
+      localStorage.setItem('userId',data.userId)
+      localStorage.setItem('teacherName',data.userName)
+       // to test back end fetching... Remove once done. 
 
       if (data.success) {
         showMessage(data.message || "Login successful!", "success");

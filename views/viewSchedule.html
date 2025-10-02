@@ -7,180 +7,243 @@
 <link rel="stylesheet" href="viewSchedule.css">
 </head>
 <body>
+
 <div class="container">
-    <!-- Header -->
-    <header class="header fade-in">
-        <div class="header-left">
-            <a href="#" class="back-button" onclick="goBack()">
-                ←
-            </a>
-            <h1>My Exam Schedule</h1>
-        </div>
-        <div class="user-info">
-            <span>Prof. Johnson</span>
-            <div class="user-avatar">PJ</div>
-        </div>
-    </header>
+<header class="header fade-in">
+    <div class="header-left">
+        <a href="#" class="back-button" onclick="goBack()">
+            ←
+        </a>
+        <h1>My Exam Schedule</h1>
+    </div>
+    <div class="user-info">
+        <span id="userName">Loading...</span>
+        <div class="user-avatar" id="userAvatar">--</div>
+    </div>
+</header>
 
-    <!-- Schedule Container -->
-    <div class="schedule-container fade-in">
-        <div class="schedule-header">
-            <h2>Allocated Exams</h2>
-            <span class="schedule-count" id="scheduleCount">8 Exams</span>
-        </div>
-
-        <!-- Filter Buttons -->
-        <div class="filter-buttons">
-            <button class="filter-btn active" onclick="filterSchedule('all')">All Exams</button>
-            <button class="filter-btn" onclick="filterSchedule('morning')">Morning</button>
-            <button class="filter-btn" onclick="filterSchedule('afternoon')">Afternoon</button>
-            <button class="filter-btn" onclick="filterSchedule('attended')">Attended</button>
-            <button class="filter-btn" onclick="filterSchedule('pending')">Pending</button>
-        </div>
-
-        <!-- Schedule Grid -->
-        <div class="schedule-grid" id="scheduleGrid">
-            <div class="schedule-item stagger-in attended" data-status="attended">
-                <div class="attended-badge">✓ Attended</div>
-                <div class="date-info">
-                    <div class="date-day">15</div>
-                    <div class="date-month">Dec</div>
-                </div>
-                <div class="session-badge session-morning">Morning</div>
-                <div class="classroom-info">
-                    <div class="classroom-number">A-101</div>
-                    <div class="classroom-building">Main Block</div>
-                </div>
-                <div class="schedule-arrow">→</div>
-            </div>
-
-            <div class="schedule-item stagger-in attended" data-status="attended">
-                <div class="attended-badge">✓ Attended</div>
-                <div class="date-info">
-                    <div class="date-day">16</div>
-                    <div class="date-month">Dec</div>
-                </div>
-                <div class="session-badge session-afternoon">Afternoon</div>
-                <div class="classroom-info">
-                    <div class="classroom-number">B-205</div>
-                    <div class="classroom-building">Tech Block</div>
-                </div>
-                <div class="schedule-arrow">→</div>
-            </div>
-
-            <div class="schedule-item stagger-in attended" data-status="attended">
-                <div class="attended-badge">✓ Attended</div>
-                <div class="date-info">
-                    <div class="date-day">18</div>
-                    <div class="date-month">Dec</div>
-                </div>
-                <div class="session-badge session-morning">Morning</div>
-                <div class="classroom-info">
-                    <div class="classroom-number">C-301</div>
-                    <div class="classroom-building">Science Block</div>
-                </div>
-                <div class="schedule-arrow">→</div>
-            </div>
-
-            <div class="schedule-item stagger-in" data-status="pending" onclick="viewExamDetails('2024-12-20')">
-                <div class="date-info">
-                    <div class="date-day">20</div>
-                    <div class="date-month">Dec</div>
-                </div>
-                <div class="session-badge session-afternoon">Afternoon</div>
-                <div class="classroom-info">
-                    <div class="classroom-number">A-203</div>
-                    <div class="classroom-building">Main Block</div>
-                </div>
-                <div class="schedule-arrow">→</div>
-            </div>
-
-            <div class="schedule-item stagger-in" data-status="pending" onclick="viewExamDetails('2024-12-22')">
-                <div class="date-info">
-                    <div class="date-day">22</div>
-                    <div class="date-month">Dec</div>
-                </div>
-                <div class="session-badge session-morning">Morning</div>
-                <div class="classroom-info">
-                    <div class="classroom-number">D-102</div>
-                    <div class="classroom-building">IT Block</div>
-                </div>
-                <div class="schedule-arrow">→</div>
-            </div>
-
-            <div class="schedule-item stagger-in" data-status="pending" onclick="viewExamDetails('2024-12-24')">
-                <div class="date-info">
-                    <div class="date-day">24</div>
-                    <div class="date-month">Dec</div>
-                </div>
-                <div class="session-badge session-afternoon">Afternoon</div>
-                <div class="classroom-info">
-                    <div class="classroom-number">B-401</div>
-                    <div class="classroom-building">Tech Block</div>
-                </div>
-                <div class="schedule-arrow">→</div>
-            </div>
-        </div>
+<!-- Schedule Container -->
+<div class="schedule-container fade-in">
+    <div class="schedule-header">
+        <h2>Allocated Exams</h2>
+        <span class="schedule-count" id="scheduleCount">Loading...</span>
     </div>
 
-    <!-- Actions Bar -->
-    <div class="actions-bar fade-in">
-        <a href="#" class="action-btn btn-secondary" onclick="goToHome()">
-            🏠 Back to Home
-        </a>
+    <!-- Filter Buttons -->
+    <div class="filter-buttons">
+        <button class="filter-btn active" onclick="filterSchedule('all')">All Exams</button>
+        <button class="filter-btn" onclick="filterSchedule('morning')">Morning</button>
+        <button class="filter-btn" onclick="filterSchedule('afternoon')">Afternoon</button>
+        <button class="filter-btn" onclick="filterSchedule('attended')">Attended</button>
+        <button class="filter-btn" onclick="filterSchedule('pending')">Pending</button>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading your exam schedule...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" class="error-state" style="display: none;">
+        <p>Failed to load schedules. Please try again.</p>
+        <button onclick="loadSchedules()" class="retry-btn">Retry</button>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="empty-state" style="display: none;">
+        <p>No exams allocated yet.</p>
+    </div>
+
+    <!-- Schedule Grid -->
+    <div class="schedule-grid" id="scheduleGrid" style="display: none;">
+        <!-- Schedules will be populated here -->
+    </div>
+</div>
+
+<!-- Actions Bar -->
+<div class="actions-bar fade-in">
+    <a href="#" class="action-btn btn-secondary" onclick="goToHome()">
+        🏠 Back to Home
+    </a>
+</div>
+</div>
+
+<!-- Logout -->
+<div class="modal-overlay" id="logoutModal">
+    <div class="modal">
+        <h3>Confirm Logout</h3>
+        <p>Are you sure you want to logout?</p>
+        <div class="modal-buttons">
+            <button class="modal-btn btn-cancel" onclick="hideLogout()">Cancel</button>
+            <button class="modal-btn btn-confirm" onclick="confirmLogout()">Logout</button>
+        </div>
     </div>
 </div>
 
 <script>
-    // Filter functionality
-    function filterSchedule(type) {
-        const buttons = document.querySelectorAll('.filter-btn');
-        const items = document.querySelectorAll('.schedule-item');
-        
-        // Update active button
-        buttons.forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
+let allSchedules = [];
+let currentFilter = 'all';
 
-        // Filter items
-        items.forEach(item => {
-            const sessionBadge = item.querySelector('.session-badge');
-            const isMorning = sessionBadge.classList.contains('session-morning');
-            const status = item.getAttribute('data-status');
-            
-            switch(type) {
-                case 'morning':
-                    item.style.display = isMorning ? 'grid' : 'none';
-                    break;
-                case 'afternoon':
-                    item.style.display = !isMorning ? 'grid' : 'none';
-                    break;
-                case 'attended':
-                    item.style.display = status === 'attended' ? 'grid' : 'none';
-                    break;
-                case 'pending':
-                    item.style.display = status === 'pending' ? 'grid' : 'none';
-                    break;
-                default:
-                    item.style.display = 'grid';
-            }
-        });
+// Load schedules on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadSchedules();
+    loadUserInfo();
+});
 
-        // Update count
-        const visibleItems = document.querySelectorAll('.schedule-item[style="display: grid"], .schedule-item:not([style*="display: none"])').length;
-        document.getElementById('scheduleCount').textContent = `${visibleItems} Exams`;
-    }
+// Fetch schedules from backend
+async function loadSchedules() {
+const loadingState = document.getElementById('loadingState');
+const errorState = document.getElementById('errorState');
+const emptyState = document.getElementById('emptyState');
+const scheduleGrid = document.getElementById('scheduleGrid');
 
-    // Navigation functions
+try {
+    loadingState.style.display = 'block';
+    errorState.style.display = 'none';
+    emptyState.style.display = 'none';
+    scheduleGrid.style.display = 'none';
 
-    function goToHome() {
-        window.location.href = '/home.html';
-    }
+    //Get teacherId from localStorage
+    const teacherId = localStorage.getItem('userId');
+    console.log(JSON.stringify(teacherId));
 
-    goBack = goToHome;
-
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('Schedule page loaded');
+    const response = await fetch(`http://localhost:3000/teacher/getSchedule`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        //teacher id to test backend
+        body: JSON.stringify({ teacherId: teacherId })
     });
+
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    
+    loadingState.style.display = 'none';
+
+    if (result.success && result.data.length > 0) {
+        allSchedules = result.data;
+        renderSchedules(allSchedules);
+        updateScheduleCount(allSchedules.length);
+        scheduleGrid.style.display = 'grid';
+    } else {
+        emptyState.style.display = 'block';
+        updateScheduleCount(0);
+    }
+
+} catch (error) {
+    console.error('Error loading schedules:', error);
+    loadingState.style.display = 'none';
+    errorState.style.display = 'block';
+}
+}
+
+// Render schedules
+function renderSchedules(schedules) {
+    const scheduleGrid = document.getElementById('scheduleGrid');
+    scheduleGrid.innerHTML = '';
+
+    schedules.forEach((schedule, index) => {
+        const scheduleItem = document.createElement('div');
+        scheduleItem.className = `schedule-item stagger-in ${schedule.status}`;
+        scheduleItem.setAttribute('data-status', schedule.status);
+        scheduleItem.style.animationDelay = `${index * 0.1}s`;
+
+        scheduleItem.innerHTML = `
+            ${schedule.status === 'attended' ? '<div class="attended-badge">✓ Attended</div>' : ''}
+            <div class="date-info">
+                <div class="date-day">${schedule.dateDay}</div>
+                <div class="date-month">${schedule.dateMonth}</div>
+            </div>
+            <div class="session-badge session-${schedule.session.toLowerCase()}">${schedule.session}</div>
+            <div class="classroom-info">
+                <div class="classroom-number">${schedule.classroom.number}</div>
+                <div class="classroom-building">${schedule.classroom.building}</div>
+            </div>
+            <div class="schedule-arrow">→</div>
+        `;
+
+        if (schedule.status === 'pending') {
+            scheduleItem.style.cursor = 'pointer';
+            scheduleItem.onclick = () => viewExamDetails(schedule.id);
+        }
+
+        scheduleGrid.appendChild(scheduleItem);
+    });
+}
+
+// Filter
+function filterSchedule(type) {
+    const buttons = document.querySelectorAll('.filter-btn');
+    
+    // Update active button
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    currentFilter = type;
+
+    let filteredSchedules = allSchedules;
+    
+    switch(type) {
+        case 'morning':
+            filteredSchedules = allSchedules.filter(s => s.session === 'Morning');
+            break;
+        case 'afternoon':
+            filteredSchedules = allSchedules.filter(s => s.session === 'Afternoon');
+            break;
+        case 'attended':
+            filteredSchedules = allSchedules.filter(s => s.status === 'attended');
+            break;
+        case 'pending':
+            filteredSchedules = allSchedules.filter(s => s.status === 'pending');
+            break;
+        default:
+            filteredSchedules = allSchedules;
+    }
+
+    renderSchedules(filteredSchedules);
+    updateScheduleCount(filteredSchedules.length);
+}
+
+function updateScheduleCount(count) {
+    document.getElementById('scheduleCount').textContent = `${count} Exam${count !== 1 ? 's' : ''}`;
+}
+
+function loadUserInfo() {
+    // Get from localStorage or session
+    const userName = localStorage.getItem('teacherName') || 'Prof. Johnson';
+    const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
+    
+    document.getElementById('userName').textContent = userName;
+    document.getElementById('userAvatar').textContent = userInitials;
+}
+
+function goToHome() {
+    window.location.href = '/home.html';
+}
+
+function goBack() {
+    window.history.back();
+}
+
+// Click avatar to show logout confirmation
+document.getElementById('userAvatar').addEventListener('click', function() {
+    document.getElementById('logoutModal').classList.add('show');
+});
+
+function hideLogout() {
+    document.getElementById('logoutModal').classList.remove('show');
+}
+
+function confirmLogout() {
+    localStorage.clear();
+    window.location.href = '/login.html';
+}
 </script>
 </body>
 </html>
