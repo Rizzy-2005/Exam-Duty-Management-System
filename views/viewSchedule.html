@@ -244,6 +244,12 @@ function confirmLogout() {
     localStorage.clear();
     window.location.href = '/login.html';
 }
+function viewExamDetails(scheduleId) {
+    // Redirect to exam allocation page with scheduleId in query params
+    window.location.href = `/examAllocations.html?scheduleId=${scheduleId}`;
+}
+
+
 </script>
 </body>
 </html>
