@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Allocations</title>
+<link rel="stylesheet" href="viewSchedule.css" />
+<style>
+  .details-grid {
+    display: grid;
+    gap: 15px;
+    margin-top: 20px;
+  }
+  .detail-item {
+    background: #fff;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: 0.3s;
+    cursor: pointer;
+  }
+  .detail-item:hover {
+    transform: scale(1.02);
+  }
+
+  /* Modal Styles */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+  }
+  .modal.show {
+    display: flex;
+  }
+  .modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  .modal-content h3 {
+    margin-bottom: 15px;
+  }
+  .modal-content textarea {
+    width: 100%;
+    min-height: 80px;
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    resize: none;
+  }
+  .modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  .btn-swap {
+    background: #4caf50;
+    color: white;
+  }
+  .btn-cancel {
+    background: #e74c3c;
+    color: white;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- Header -->
+  <header class="header fade-in">
+    <div class="header-left">
+      <a href="#" class="back-button" onclick="goBack()">←</a>
+      <h1>Exam Allocations</h1>
+    </div>
+    <div class="user-info">
+      <span id="userName">Prof. Johnson</span>
+      <div class="user-avatar" id="userAvatar">PJ</div>
+    </div>
+  </header>
+
+  <!-- Exam Details -->
+  <div class="details-container fade-in">
+    <h2 id="examDateTitle">Loading allocations...</h2>
+    <div class="details-grid" id="detailsGrid">
+      <!-- Allocations will populate here -->
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions-bar fade-in">
+    <a href="/home.html" class="action-btn btn-secondary">🏠 Back to Home</a>
+  </div>
+</div>
+
+<!-- Swap Modal -->
+<div class="modal" id="swapModal">
+  <div class="modal-content">
+    <h3 id="modalTeacherName">Request Swap</h3>
+    <textarea id="swapMessage" placeholder="Optional message..."></textarea>
+    <div class="modal-buttons">
+      <button class="btn btn-swap" onclick="sendSwapRequest()">Swap Request</button>
+      <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedTeacher = null;
+
+// Get scheduleId from URL
+function getScheduleIdFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('scheduleId');
+}
+
+// Fetch allocations from backend
+async function loadAllocations() {
+  const scheduleId = getScheduleIdFromURL();
+  const teacherId = localStorage.getItem('userId'); // current teacher
+  const detailsGrid = document.getElementById("detailsGrid");
+  const examDateTitle = document.getElementById("examDateTitle");
+
+  if (!scheduleId || !teacherId) {
+    examDateTitle.textContent = 'No schedule or teacher selected';
+    return;
+  }
+
+  try {
+    const response = await fetch('http://localhost:3000/teacher/getAllocationDetails', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ scheduleId, teacherId })
+    });
+
+    const result = await response.json();
+
+    if (result.success && result.data.length > 0) {
+      populateAllocations(result.data);
+      examDateTitle.textContent = "Allocations for the selected exam";
+    } else {
+      examDateTitle.textContent = "No allocations found";
+      detailsGrid.innerHTML = '';
+    }
+  } catch (err) {
+    console.error(err);
+    examDateTitle.textContent = "Error loading allocations";
+  }
+}
+
+// Populate allocations dynamically
+function populateAllocations(allocations) {
+  const grid = document.getElementById("detailsGrid");
+  grid.innerHTML = "";
+
+  allocations.forEach(item => {
+    const div = document.createElement("div");
+    div.classList.add("detail-item");
+    div.innerHTML = `
+      <h3>${item.teacher}</h3>
+      <p><strong>Room:</strong> ${item.classroom.number}</p>
+      <p><strong>Block:</strong> ${item.classroom.building}</p>
+      <p><strong>Session:</strong> ${item.session}</p>
+    `;
+    div.onclick = () => openModal(item.teacher);
+    grid.appendChild(div);
+  });
+}
+
+// Swap Modal functions
+function openModal(teacherName) {
+  selectedTeacher = teacherName;
+  document.getElementById("modalTeacherName").textContent = `Request swap with ${teacherName}`;
+  document.getElementById("swapMessage").value = "";
+  document.getElementById("swapModal").classList.add("show");
+}
+
+function closeModal() {
+  document.getElementById("swapModal").classList.remove("show");
+}
+
+// Example swap request to backend
+async function sendSwapRequest() {
+  const message = document.getElementById("swapMessage").value;
+  const scheduleId = getScheduleIdFromURL();
+  const teacherId = localStorage.getItem('userId');
+
+  try {
+    const response = await fetch('http://localhost:3000/teacher/requestSwap', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ scheduleId, fromTeacherId: teacherId, toTeacherName: selectedTeacher, message })
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      alert(`Swap request sent to ${selectedTeacher}`);
+    } else {
+      alert(`Failed to send swap request: ${result.message}`);
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Error sending swap request');
+  } finally {
+    closeModal();
+  }
+}
+
+// Navigation
+function goBack() {
+  window.history.back();
+}
+
+// Load user info
+function loadUserInfo() {
+  const userName = localStorage.getItem('teacherName') || 'Prof. Johnson';
+  const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
+  document.getElementById('userName').textContent = userName;
+  document.getElementById('userAvatar').textContent = userInitials;
+}
+
+// Logout modal
+document.getElementById('userAvatar').addEventListener('click', function() {
+  const confirmed = confirm('Do you want to logout?');
+  if (confirmed) {
+    localStorage.clear();
+    window.location.href = '/login.html';
+  }
+});
+
+// On page load
+document.addEventListener('DOMContentLoaded', () => {
+  loadAllocations();
+  loadUserInfo();
+});
+
+</script>
+</body>
+</html>

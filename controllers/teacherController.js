@@ -59,3 +59,45 @@ res.status(500).json({
 });
 }
 };
+exports.getAllocationDetails = async (req, res) => {
+  try {
+    const { scheduleId } = req.body;
+
+    if (!scheduleId) {
+      return res.status(400).json({ success: false, message: 'Schedule ID is required' });
+    }
+
+    // Find the selected schedule
+    const allocation = await schedules.findById(scheduleId)
+      .populate('examId', 'title')
+      .populate('classroomId', 'name building')
+      .populate('teacherId', 'name');
+
+    if (!allocation) {
+      return res.status(404).json({ success: false, message: 'Schedule not found', data: [] });
+    }
+
+    // Find all allocations for the same exam & session
+    const relatedAllocations = await schedules.find({
+      examId: allocation.examId._id,
+      session: allocation.session
+    })
+    .populate('teacherId', 'name')
+    .populate('classroomId', 'name building');
+
+    const transformed = relatedAllocations.map(a => ({
+      teacher: a.teacherId.name,
+      classroom: {
+        number: a.classroomId.name,
+        building: a.classroomId.building
+      },
+      session: a.session === 'FN' ? 'Morning' : 'Afternoon'
+    }));
+
+    res.status(200).json({ success: true, data: transformed });
+
+  } catch (error) {
+    console.error('Error fetching allocation details:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch allocation details', error: error.message });
+  }
+};
