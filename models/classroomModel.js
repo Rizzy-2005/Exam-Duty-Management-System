@@ -6,4 +6,5 @@ const classroomSchema = new mongoose.Schema({
   capacity: { type: Number, required: true, min: 1 }
 });
 
+
 module.exports = mongoose.model("classrooms", classroomSchema);
