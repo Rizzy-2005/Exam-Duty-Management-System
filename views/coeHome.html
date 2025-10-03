@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="coeHome.css">
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="topbar">
+        <div style="padding-left: 75px; padding-top: 8px;padding-bottom: 8px;"><img class="logo" src="/public/college-logo.png" alt="college-logo"></div>
+        <div class="topbar-buttons">
+            <button class="topbar-btn" id = 'home'>Home</button>
+            <button class="topbar-btn">Notification</button>
+            <button class="topbar-btn">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <button class="sidebar-btn" id="createExam">Create Exam</button>
+            <button class="sidebar-btn">View Exam</button>
+            <button class="sidebar-btn">Teachers</button>
+            <button class="sidebar-btn">Classrooms</button>
+            <button class="sidebar-btn">History</button>
+            <button class="sidebar-btn">Allocations</button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="button-row">
+                <button class="main-btn">Exams</button>
+                <button class="main-btn" id="teacher">Teachers</button>
+            </div>
+            <div class="button-row">
+                <button class="main-btn">Pending Requests</button>
+                <button class="main-btn">Upcoming</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script>
+    const home = document.getElementById('home');
+    home.addEventListener('click',()=>{
+        window.location.href = '/coeHome.html'
+    })
+
+    const teacher = document.getElementById('teacher')
+    teacher.addEventListener('click',()=>{
+        window.location.href = '/addTeacher.html';
+    })
+
+    const createExam = document.getElementById('createExam');
+    createExam.addEventListener('click',()=>{
+        window.location.href = '/createExam.html';
+    })
+</script>
+</html>
