@@ -176,7 +176,8 @@
         showMessage(data.message || "Login successful!", "success");
         setTimeout(() => {
           if (data.role === "COE") {
-            window.location.href = "/addTeacher.html";  
+            /*window.location.href = "/addTeacher.html";*/
+            window.location.href = "/coeHome.html";  
           } else if (data.role === 'Teacher') {
             window.location.href = "/home.html"
           }else{
