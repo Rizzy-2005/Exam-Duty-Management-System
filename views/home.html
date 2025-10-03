@@ -87,16 +87,15 @@ document.addEventListener('DOMContentLoaded',function(){
     const avatarspan = document.getElementById('avatar');
 
     namespan.textContent = `${name}`;
-    const initials = userFullName.split(' ')
+    const initials = name.split(' ')
         .map(word => word.charAt(0))
         .join('')
         .toUpperCase();
 
-    userAvatarDiv.textContent = initials;
+    avatarspan.textContent = initials;
 })
 
 function navigateToSchedule(){
-// Navigate to the schedule page
 window.location.href = '/viewSchedule.html';
 }    
 
