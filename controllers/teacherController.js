@@ -23,7 +23,7 @@ try {
         const currentDate = new Date();
         const examDate = new Date(schedule.date);
         
-        // Determine if exam is attended (past date)
+
         const isAttended = examDate < currentDate;
         
         return {
