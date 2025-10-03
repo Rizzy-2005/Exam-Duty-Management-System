@@ -99,6 +99,17 @@
       <div class="user-avatar" id="userAvatar">PJ</div>
     </div>
   </header>
+  <!-- Add date filter above allocations -->
+<div class="filter-bar fade-in" style="margin: 20px 0; text-align: center;">
+  <label for="dateFilter"><strong>Filter by Date:</strong></label>
+  <input type="date" id="dateFilter" style="padding: 6px; border-radius: 6px; border: 1px solid #ccc;" />
+</div>
+
+<!-- Exam Details -->
+<div class="details-container fade-in">
+  <h2 id="examDateTitle">Loading allocations...</h2>
+  <div class="details-grid" id="detailsGrid"></div>
+</div>
 
   <!-- Exam Details -->
   <div class="details-container fade-in">
@@ -128,6 +139,7 @@
 
 <script>
 let selectedTeacher = null;
+let allAllocations = []; // store all fetched allocations
 
 // Get scheduleId from URL
 function getScheduleIdFromURL() {
@@ -158,7 +170,18 @@ async function loadAllocations() {
     const result = await response.json();
 
     if (result.success && result.data.length > 0) {
-      populateAllocations(result.data);
+      // Add date components for display
+      allAllocations = result.data.map(item => {
+        const dateObj = new Date(item.date);
+        return {
+          ...item,
+          dateDay: dateObj.getDate(),
+          dateMonth: dateObj.toLocaleString('en-US', { month: 'short' }),
+          dateYear: dateObj.getFullYear(),
+        };
+      });
+
+      populateAllocations(allAllocations);
       examDateTitle.textContent = "Allocations for the selected exam";
     } else {
       examDateTitle.textContent = "No allocations found";
@@ -170,16 +193,30 @@ async function loadAllocations() {
   }
 }
 
-// Populate allocations dynamically
-function populateAllocations(allocations) {
+// Populate allocations dynamically (with optional date filter)
+function populateAllocations(allocations, filterDate = null) {
   const grid = document.getElementById("detailsGrid");
   grid.innerHTML = "";
 
-  allocations.forEach(item => {
+  let filtered = allocations;
+
+  // Apply date filter if selected
+  if (filterDate) {
+    filtered = allocations.filter(item => item.date.split('T')[0] === filterDate);
+  }
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<p style="text-align:center; color:#888;">No allocations found for this date</p>`;
+    return;
+  }
+
+  filtered.forEach(item => {
     const div = document.createElement("div");
     div.classList.add("detail-item");
+
     div.innerHTML = `
       <h3>${item.teacher}</h3>
+      <p><strong>Date:</strong> ${item.dateDay} ${item.dateMonth} ${item.dateYear}</p>
       <p><strong>Room:</strong> ${item.classroom.number}</p>
       <p><strong>Block:</strong> ${item.classroom.building}</p>
       <p><strong>Session:</strong> ${item.session}</p>
@@ -201,7 +238,7 @@ function closeModal() {
   document.getElementById("swapModal").classList.remove("show");
 }
 
-// Example swap request to backend
+// Send swap request to backend
 async function sendSwapRequest() {
   const message = document.getElementById("swapMessage").value;
   const scheduleId = getScheduleIdFromURL();
@@ -249,6 +286,12 @@ document.getElementById('userAvatar').addEventListener('click', function() {
     localStorage.clear();
     window.location.href = '/login.html';
   }
+});
+
+// Date filter listener
+document.getElementById("dateFilter").addEventListener("change", (e) => {
+  const selectedDate = e.target.value; // YYYY-MM-DD
+  populateAllocations(allAllocations, selectedDate);
 });
 
 // On page load

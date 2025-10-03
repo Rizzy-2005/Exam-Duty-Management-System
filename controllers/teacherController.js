@@ -67,9 +67,9 @@ exports.getAllocationDetails = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Schedule ID is required' });
     }
 
-    // Find the selected schedule
+    // Find the clicked schedule
     const allocation = await schedules.findById(scheduleId)
-      .populate('examId', 'title')
+      .populate('examId', 'title date')
       .populate('classroomId', 'name building')
       .populate('teacherId', 'name');
 
@@ -77,27 +77,46 @@ exports.getAllocationDetails = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Schedule not found', data: [] });
     }
 
-    // Find all allocations for the same exam & session
+    const examDate = new Date(allocation.date);
+
+    // ✅ Fetch allocations for the same date and all upcoming dates
     const relatedAllocations = await schedules.find({
-      examId: allocation.examId._id,
-      session: allocation.session
+      date: { $gte: examDate }   // same day and future days
     })
     .populate('teacherId', 'name')
-    .populate('classroomId', 'name building');
+    .populate('classroomId', 'name building')
+    .populate('examId', 'title')
+    .sort({ date: 1, session: 1 });
 
-    const transformed = relatedAllocations.map(a => ({
-      teacher: a.teacherId.name,
-      classroom: {
-        number: a.classroomId.name,
-        building: a.classroomId.building
-      },
-      session: a.session === 'FN' ? 'Morning' : 'Afternoon'
-    }));
+    // ✅ Transform data with full date info
+    const transformed = relatedAllocations.map(a => {
+      const dateObj = new Date(a.date);
+      return {
+        id: a._id,
+        teacher: a.teacherId.name,
+        date: dateObj.toISOString().split('T')[0],  // YYYY-MM-DD
+        dateDay: dateObj.getDate(),
+        dateMonth: dateObj.toLocaleString('en-US', { month: 'short' }),
+        dateYear: dateObj.getFullYear(),
+        classroom: {
+          number: a.classroomId.name,
+          building: a.classroomId.building
+        },
+        exam: {
+          title: a.examId.title
+        },
+        session: a.session === 'FN' ? 'Morning' : 'Afternoon'
+      };
+    });
 
     res.status(200).json({ success: true, data: transformed });
 
   } catch (error) {
     console.error('Error fetching allocation details:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch allocation details', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch allocation details',
+      error: error.message
+    });
   }
 };
