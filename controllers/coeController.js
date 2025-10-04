@@ -1,5 +1,7 @@
 //Importing the models
 const Users = require("../models/userModel");
+const classroom = require('../models/classroomModel');
+
 
 exports.addTeacher = async (req, res) => {
   try {
@@ -27,8 +29,6 @@ exports.addTeacher = async (req, res) => {
 };
 
 exports.loadClassrooms = async (req,res)=>{
-    const classroom = require('../models/classroomModel');
-
         try {
         const classes = await classroom.find({}, { name: 1, building: 1, _id: 0 });
 
