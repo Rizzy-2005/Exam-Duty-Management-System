@@ -10,7 +10,7 @@
     <div class="topbar">
         <div style="padding-left: 75px; padding-top: 8px;padding-bottom: 8px;"><img class="logo" src="/public/college-logo.png" alt="college-logo"></div>
         <div class="topbar-buttons">
-            <button class="topbar-btn" id = 'home'>Home</button>
+            <button class="topbar-btn" id='home'>Home</button>
             <button class="topbar-btn">Notification</button>
             <button class="topbar-btn">Logout</button>
         </div>
@@ -69,12 +69,8 @@
                 <span class="close" id="closeClassroom">&times;</span>
             </div>
             <div class="modal-body">
-                <div class="block-selector">
-                    <button class="block-btn active" data-block="A">Block A</button>
-                    <button class="block-btn" data-block="B">Block B</button>
-                    <button class="block-btn" data-block="C">Block C</button>
-                    <button class="block-btn" data-block="D">Block D</button>
-                    <button class="block-btn" id="selectAllBtn" style="margin-left: auto; background: #28a745;">Select All</button>
+                <div class="block-selector" id="blockSelector">
+                    <!-- Building buttons will be populated here -->
                 </div>
                 <div class="classroom-grid" id="classroomGrid">
                     <!-- Classrooms will be populated here -->
@@ -109,38 +105,105 @@
             </div>
         </div>
     </div>
-    </body>
 
     <script>
-
         const home = document.getElementById('home');
-    home.addEventListener('click',()=>{
-        window.location.href = '/coeHome.html'
-    })
+        home.addEventListener('click', () => {
+            window.location.href = '/coeHome.html';
+        });
 
-        const classrooms = {
-            'A': ['A101', 'A102', 'A103', 'A104', 'A105', 'A106', 'A107', 'A108'],
-            'B': ['B201', 'B202', 'B203', 'B204', 'B205', 'B206', 'B207', 'B208'],
-            'C': ['C301', 'C302', 'C303', 'C304', 'C305', 'C306'],
-            'D': ['D401', 'D402', 'D403', 'D404', 'D405']
-        };
-
+        const classrooms = {};
         let selectedClassrooms = [];
         let tempSelectedClassrooms = [];
         let teacherList = [];
         let unavailableTeachers = [];
-        let currentBlock = 'A';
+        let currentBlock = '';
 
-        // Modal functionality
+        // Modal elements
         const classroomModal = document.getElementById('classroomModal');
         const unavailabilityModal = document.getElementById('unavailabilityModal');
+
+        // Fetch classrooms from database
+        fetch("/coe/createExam")
+            .then(response => response.json())
+            .then(data => {
+                console.log("Classrooms from server:", data);
+
+                // Group classrooms by building
+                data.forEach(item => {
+                    const building = item.building;
+                    const name = item.name;
+
+                    if (!classrooms[building]) {
+                        classrooms[building] = [];
+                    }
+                    classrooms[building].push(name);
+                });
+
+                console.log("Organized classrooms:", classrooms);
+                
+                // Create buttons AFTER data is fetched
+                createButtons();
+            })
+            .catch(err => console.error("Error fetching classrooms:", err));
+
+        function createButtons() {
+            const blockSelector = document.getElementById('blockSelector');
+            blockSelector.innerHTML = '';
+
+            // Create select all button
+            const allBtn = document.createElement('button');
+            allBtn.id = 'selectAllBtn';
+            allBtn.textContent = 'Select All';
+            allBtn.style.marginLeft = 'auto';
+            allBtn.style.background = '#28a745';
+            allBtn.className = 'block-btn';
+            allBtn.onclick = selectAllClassrooms;
+            blockSelector.appendChild(allBtn);
+
+            let index = 0;
+            // Add button for each building
+            Object.keys(classrooms).forEach((building) => {
+                const btn = document.createElement('button');
+                btn.className = 'block-btn';
+                btn.dataset.block = building;
+                btn.textContent = building;
+
+                if (index === 0) {
+                    btn.classList.add('active');
+                    index++;
+                }
+                
+                btn.onclick = () => {
+                    document.querySelectorAll('.block-btn').forEach(b => {
+                        if (b.id !== 'selectAllBtn') {
+                            b.classList.remove('active');
+                        }
+                    });
+                    btn.classList.add('active');
+                    currentBlock = building;
+                    loadClassrooms(building);
+                };
+                
+                blockSelector.insertBefore(btn, allBtn);
+            });
+
+            // Set initial block and load classrooms
+            if (Object.keys(classrooms).length > 0) {
+                currentBlock = Object.keys(classrooms)[0];
+                loadClassrooms(currentBlock);
+            }
+        }
 
         // Open classroom modal
         document.getElementById('classroomBtn').onclick = function() {
             tempSelectedClassrooms = [...selectedClassrooms];
             classroomModal.style.display = 'block';
-            currentBlock = 'A';
-            loadClassrooms('A');
+            
+            // Reload current block's classrooms if data is loaded
+            if (currentBlock && classrooms[currentBlock]) {
+                loadClassrooms(currentBlock);
+            }
         };
 
         // Open unavailability modal
@@ -176,56 +239,40 @@
             }
         };
 
-        // Block selection
-        document.querySelectorAll('.block-btn').forEach(btn => {
-            btn.onclick = function() {
-                if (this.id === 'selectAllBtn') {
-                    selectAllClassrooms();
-                    return;
-                }
-                
-                document.querySelectorAll('.block-btn').forEach(b => {
-                    if (b.id !== 'selectAllBtn') {
-                        b.classList.remove('active');
-                    }
-                });
-                this.classList.add('active');
-                currentBlock = this.dataset.block;
-                loadClassrooms(this.dataset.block);
-            };
-        });
-
         // Select all classrooms in current block
         function selectAllClassrooms() {
-            const currentClassrooms = classrooms[currentBlock];
-            currentClassrooms.forEach(classroom => {
-                if (!tempSelectedClassrooms.includes(classroom)) {
-                    tempSelectedClassrooms.push(classroom);
+            const currentClassrooms = classrooms[currentBlock] || [];
+            currentClassrooms.forEach(room => {
+                if (!tempSelectedClassrooms.includes(room)) {
+                    tempSelectedClassrooms.push(room);
                 }
             });
             loadClassrooms(currentBlock);
         }
 
         // Load classrooms for selected block
-        function loadClassrooms(block) {
+        function loadClassrooms(building) {
             const grid = document.getElementById('classroomGrid');
             grid.innerHTML = '';
-            
-            classrooms[block].forEach(classroom => {
+
+            const rooms = classrooms[building] || [];
+            rooms.forEach(room => {
                 const div = document.createElement('div');
                 div.className = 'classroom-item';
-                if (tempSelectedClassrooms.includes(classroom)) {
+                if (tempSelectedClassrooms.includes(room)) {
                     div.classList.add('selected');
                 }
-                div.textContent = classroom;
+                div.textContent = room;
+
                 div.onclick = function() {
                     this.classList.toggle('selected');
-                    if (tempSelectedClassrooms.includes(classroom)) {
-                        tempSelectedClassrooms = tempSelectedClassrooms.filter(c => c !== classroom);
+                    if (tempSelectedClassrooms.includes(room)) {
+                        tempSelectedClassrooms = tempSelectedClassrooms.filter(r => r !== room);
                     } else {
-                        tempSelectedClassrooms.push(classroom);
+                        tempSelectedClassrooms.push(room);
                     }
                 };
+
                 grid.appendChild(div);
             });
         }
@@ -343,4 +390,5 @@
         teacherList = ['Dr. Smith', 'Prof. Johnson', 'Ms. Davis', 'Mr. Wilson', 'Dr. Brown'];
         displayTeachers();
     </script>
+</body>
 </html>
