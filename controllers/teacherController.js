@@ -4,7 +4,7 @@ const Class = require('../models/classroomModel')
 
 exports.getSchedule = async (req, res) => {
 try {
-    const teacherId = req.body.teacherId || req.params.teacherId || req.user?.id;
+    const teacherId = req.body.teacherId;
 
     if (!teacherId) {
         return res.status(400).json({
@@ -23,7 +23,6 @@ try {
         const currentDate = new Date();
         const examDate = new Date(schedule.date);
         
-
         const isAttended = examDate < currentDate;
         
         return {
