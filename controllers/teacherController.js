@@ -78,7 +78,7 @@ exports.getAllocationDetails = async (req, res) => {
 
     const examDate = new Date(allocation.date);
 
-    // ✅ Fetch allocations for the same date and all upcoming dates
+    //Fetch allocations for the same date and all upcoming dates
     const relatedAllocations = await schedules.find({
       date: { $gte: examDate }   // same day and future days
     })
@@ -87,7 +87,7 @@ exports.getAllocationDetails = async (req, res) => {
     .populate('examId', 'title')
     .sort({ date: 1, session: 1 });
 
-    // ✅ Transform data with full date info
+    //Transform data with full date info
     const transformed = relatedAllocations.map(a => {
       const dateObj = new Date(a.date);
       return {
