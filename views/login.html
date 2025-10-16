@@ -171,6 +171,7 @@
       });
 
       const data = await result.json();
+      
       console.log(data) //debug errors
       localStorage.setItem('userId',data.userId)
       localStorage.setItem('teacherName',data.userName)
