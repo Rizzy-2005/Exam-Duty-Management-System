@@ -93,6 +93,7 @@ exports.getAllocationDetails = async (req, res) => {
       return {
         id: a._id,
         teacher: a.teacherId.name,
+        teacherId: a.teacherId,
         date: dateObj.toISOString().split('T')[0],  // YYYY-MM-DD
         dateDay: dateObj.getDate(),
         dateMonth: dateObj.toLocaleString('en-US', { month: 'short' }),
@@ -102,7 +103,8 @@ exports.getAllocationDetails = async (req, res) => {
           building: a.classroomId.building
         },
         exam: {
-          title: a.examId.title
+          title: a.examId.title,
+          id: a.examId
         },
         session: a.session === 'FN' ? 'Morning' : 'Afternoon'
       };
