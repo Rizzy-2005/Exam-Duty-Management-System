@@ -250,6 +250,8 @@ async function sendSwapRequest() {
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({ scheduleId, fromTeacherId: teacherId, toTeacherName: selectedTeacher, message })
+      // Need toTeacher ID and examID. 
+      // The fetch link has been changed to requests/send. 
     });
 
     const result = await response.json();
