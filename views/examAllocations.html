@@ -221,15 +221,16 @@ function populateAllocations(allocations, filterDate = null) {
       <p><strong>Block:</strong> ${item.classroom.building}</p>
       <p><strong>Session:</strong> ${item.session}</p>
     `;
-    div.onclick = () => openModal(item.teacher);
+    div.onclick = () => openModal(item);
     grid.appendChild(div);
   });
 }
 
 // Swap Modal functions
-function openModal(teacherName) {
-  selectedTeacher = teacherName;
-  document.getElementById("modalTeacherName").textContent = `Request swap with ${teacherName}`;
+function openModal(allocation) {
+  selectedAllocation = allocation;
+  selectedTeacher = allocation.teacher;
+  document.getElementById("modalTeacherName").textContent = `Request swap with ${allocation.teacher}`;
   document.getElementById("swapMessage").value = "";
   document.getElementById("swapModal").classList.add("show");
 }
@@ -243,13 +244,14 @@ async function sendSwapRequest() {
   const message = document.getElementById("swapMessage").value;
   const scheduleId = getScheduleIdFromURL();
   const teacherId = localStorage.getItem('userId');
+  const toTeacherId = selectedAllocation.teacherId;
 
   try {
     const response = await fetch('http://localhost:3000/teacher/requestSwap', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ scheduleId, fromTeacherId: teacherId, toTeacherName: selectedTeacher, message })
+      body: JSON.stringify({ scheduleId, fromTeacherId: teacherId, toTeacherName: selectedTeacher, toTeacherId: toTeacherId, message: message, examID: selectedAllocation.examId })
       // Need toTeacher ID and examID. 
       // The fetch link has been changed to requests/send. 
     });
