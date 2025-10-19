@@ -23,21 +23,29 @@
     transform: scale(1.02);
   }
 
-  /* Modal Styles */
-  .modal {
+  /* Swap Modal Styles */
+  .swap-modal {
     display: none;
     position: fixed;
     z-index: 1000;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
     background: rgba(0,0,0,0.6);
+  }
+
+  .swap-modal.show {
+    display: flex;
     justify-content: center;
     align-items: center;
   }
-  .modal.show {
-    display: flex;
-  }
-  .modal-content {
+
+  .swap-modal .modal-content {
     background: #fff;
     padding: 20px;
     border-radius: 12px;
@@ -47,10 +55,10 @@
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     animation: fadeIn 0.3s ease-in-out;
   }
-  .modal-content h3 {
+  .swap-modal .modal-content h3 {
     margin-bottom: 15px;
   }
-  .modal-content textarea {
+  .swap-modal .modal-content textarea {
     width: 100%;
     min-height: 80px;
     margin-bottom: 15px;
@@ -105,11 +113,6 @@
   <input type="date" id="dateFilter" style="padding: 6px; border-radius: 6px; border: 1px solid #ccc;" />
 </div>
 
-<!-- Exam Details -->
-<div class="details-container fade-in">
-  <h2 id="examDateTitle">Loading allocations...</h2>
-  <div class="details-grid" id="detailsGrid"></div>
-</div>
 
   <!-- Exam Details -->
   <div class="details-container fade-in">
@@ -126,7 +129,7 @@
 </div>
 
 <!-- Swap Modal -->
-<div class="modal" id="swapModal">
+<div class="swap-modal" id="swapModal">
   <div class="modal-content">
     <h3 id="modalTeacherName">Request Swap</h3>
     <textarea id="swapMessage" placeholder="Optional message..."></textarea>
@@ -168,6 +171,7 @@ async function loadAllocations() {
     });
 
     const result = await response.json();
+    console.log(JSON.stringify(result))
 
     if (result.success && result.data.length > 0) {
       // Add date components for display
@@ -244,16 +248,36 @@ async function sendSwapRequest() {
   const message = document.getElementById("swapMessage").value;
   const scheduleId = getScheduleIdFromURL();
   const teacherId = localStorage.getItem('userId');
-  const toTeacherId = selectedAllocation.teacherId;
+  const toTeacherId = selectedAllocation.teacherId._id || selectedAllocation.teacherId;
+  
+  // Get examId from the correct path
+  const examId = selectedAllocation.exam.id._id || selectedAllocation.exam.id;
+  
+  console.log("Request data:", { 
+    scheduleId, 
+    fromTeacherId: teacherId, 
+    toTeacherId, 
+    message, 
+    examId 
+  });
+
+  if (!examId) {
+    alert('Error: Exam ID not found in allocation data');
+    return;
+  }
 
   try {
-    const response = await fetch('http://localhost:3000/teacher/requestSwap', {
+    const response = await fetch('http://localhost:3000/requests/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ scheduleId, fromTeacherId: teacherId, toTeacherName: selectedTeacher, toTeacherId: toTeacherId, message: message, examID: selectedAllocation.examId })
-      // Need toTeacher ID and examID. 
-      // The fetch link has been changed to requests/send. 
+      body: JSON.stringify({ 
+        scheduleId, 
+        fromTeacherId: teacherId, 
+        toTeacherId: toTeacherId, 
+        message: message, 
+        examId: examId 
+      })
     });
 
     const result = await response.json();
@@ -269,6 +293,7 @@ async function sendSwapRequest() {
     closeModal();
   }
 }
+
 
 // Navigation
 function goBack() {
