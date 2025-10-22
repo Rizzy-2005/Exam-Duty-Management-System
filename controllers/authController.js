@@ -7,12 +7,18 @@ exports.login = async (req, res) => {
   try{
     const user = await Users.findOne({ userId: username });
     if (user && user.password === password) {
+          req.session.user = {
+          id: user._id,
+          name: user.name,
+          role: user.role,
+          department: user.department
+      };
     res.json({
         success: true,
         message: 'User Successfully Logged in',
         role: user.role,
         userId: user._id,
-        userName: user.name, // to test backend fetching in teacher
+        userName: user.name, 
     });
     } else {
     res.status(401).json({
