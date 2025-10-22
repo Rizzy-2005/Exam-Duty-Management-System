@@ -24,7 +24,7 @@ exports.receiveRequest = async (req,res)=>{
         const msgs = await requests.find({toTeacherId:req.params.id});
         res.status(200).send({success:true, requestList:msgs});
     }catch(error){
-        res.status(400).send({success:false, msg:error.message})
+        res.status(400).send({success:false, msg:error.message});
     }
 }
 

@@ -1,5 +1,7 @@
 //Importing necessary modules
 const express = require("express");
+const session = require("express-session");
+const cors = require("cors");
 const path = require("path");
 const connectDb = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
@@ -10,6 +12,22 @@ const reqRoutes = require('./routes/requestRoutes');
 //Initializing the express app
 const app = express();
 app.use(express.json());
+app.use(cors({
+  origin: "http://localhost:3000", // React frontend URL
+  credentials: true
+}));
+
+//Initializing the session
+app.use(session({
+    secret: "exam-duty",  // replace with a secure secret
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 1000 * 60 * 60, // 1 hour
+        httpOnly: true,
+        secure: false // true only if using HTTPS
+    }
+}));
 
 //Connect to mongodb
 connectDb();
@@ -21,10 +39,14 @@ app.use('/coe', coeRoutes);
 app.use('/teacher',teachRoutes);
 app.use('/requests',reqRoutes);
 
-const PORT = 3000;
+const PORT = 5000;
 
-app.get('/', (req,res) => {
-  res.redirect("/login.html");
+app.get('/coeHome', (req,res) => {
+  res.redirect("/coeHome.html");
+});
+
+app.get('/teacherHome', (req,res) => {
+  res.redirect("/home.html");
 });
 
 app.listen(PORT, (err) => {
