@@ -31,7 +31,7 @@ exports.addTeacher = async (req, res) => {
 
 exports.loadClassrooms = async (req,res)=>{
         try {
-        const classes = await classroom.find({}, { name: 1, building: 1, _id: 0 });
+        const classes = await classroom.find({}, { name: 1, building: 1, _id: 1 });
 
         if (!classes || classes.length === 0) {
             return res.status(404).json({ message: "No classrooms were found" });
@@ -61,7 +61,7 @@ exports.getTeachers = async (req, res) => {
   try {
     const teachers = await Users.find(
       { role: 'Teacher' }, 
-      { name: 1, userId: 1, department: 1, _id: 0 }
+      { name: 1, userId: 1, department: 1, _id: 1 }
     ).sort({ name: 1 }); 
 
     if (!teachers || teachers.length === 0) {
@@ -236,3 +236,41 @@ exports.getAllocations = async (req, res) => {
   }
 };
 
+exports.updateAllocation = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { teacherId, classroomId } = req.body;
+
+    console.log(`[CONTROLLER] Updating allocation ${id}`);
+    console.log('Request body:', req.body);
+
+    // Simple update without pre-validation
+    const updatedAllocation = await Allocation.findByIdAndUpdate(
+      id,
+      { 
+        teacherId, 
+        classroomId 
+      },
+      { new: true }
+    )
+    .populate('teacherId', 'name userId')
+    .populate('classroomId', 'name building');
+
+    if (!updatedAllocation) {
+      return res.status(404).json({ message: 'Allocation not found' });
+    }
+
+    console.log('[SUCCESS] Allocation updated');
+    res.json({ 
+      message: 'Allocation updated successfully', 
+      allocation: updatedAllocation 
+    });
+
+  } catch (error) {
+    console.error('[ERROR] Full error:', error);
+    res.status(500).json({ 
+      message: 'Server error updating allocation',
+      error: error.message 
+    });
+  }
+};
