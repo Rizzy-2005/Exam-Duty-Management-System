@@ -1,7 +1,8 @@
 //Importing the models
 const Users = require("../models/userModel");
 const classroom = require('../models/classroomModel');
-
+const Exam = require("../models/examModel");
+const Allocation = require("../models/allocationModel");
 
 exports.addTeacher = async (req, res) => {
   try {
@@ -42,8 +43,6 @@ exports.loadClassrooms = async (req,res)=>{
     }
 }
 
-// In your controller file (e.g., coeController.js)
-
 exports.getTeachers = async (req, res) => {
   try {
     // Fetch only users with role 'Teacher'
@@ -60,5 +59,52 @@ exports.getTeachers = async (req, res) => {
   } catch (error) {
     console.error("Error fetching teachers:", error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+exports.createExam = async (req, res) => {
+  try {
+    const { examName, examDatesWithSessions, selectedClassrooms, unavailableTeachers } = req.body;
+
+    //Step 1: Convert frontend object to schema format
+    const allDates = Object.keys(examDatesWithSessions);
+    const allSessions = new Set();
+    const expectedStudents = new Map();
+
+    allDates.forEach(date => {
+      const sessions = examDatesWithSessions[date];
+      Object.keys(sessions).forEach(session => {
+        allSessions.add(session);
+        const key = `${date}_${session}`;
+        expectedStudents.set(key, sessions[session].capacity || 0);
+      });
+    });
+
+    //Step 2: Save Exam
+    const exam = new Exam({
+      name: examName,
+      dates: allDates,
+      sessions: Array.from(allSessions),
+      expectedStudents
+    });
+    await exam.save();
+
+    //Step 3: Auto allocate teachers
+    //const allocations = await autoAllocateTeachers({examId: exam._id, selectedClassrooms,unavailableTeachers,exam});
+
+    res.status(201).json({
+      success: true,
+      message: "Exam created and teachers allocated successfully!",
+      exam,
+      allocations
+    });
+
+  } catch (err) {
+    console.error("Error creating exam:", err);
+    res.status(500).json({
+      success: false,
+      message: err.message || "Internal server error"
+    });
   }
 };

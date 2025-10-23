@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swap Requests</title>
+<link rel="stylesheet" href="swapRequests.css">
+</head>
+<body>
+
+<div class="container">
+<header class="header fade-in">
+    <div class="header-left">
+        <a href="#" class="back-button" onclick="goBack()">
+            ←
+        </a>
+        <h1>Swap Requests</h1>
+    </div>
+    <div class="user-info">
+        <span id="userName">Loading...</span>
+        <div class="user-avatar" id="userAvatar">--</div>
+    </div>
+</header>
+
+<!-- Requests Container -->
+<div class="requests-container fade-in">
+    <div class="requests-header">
+        <h2>Pending Requests</h2>
+        <span class="requests-count" id="requestsCount">Loading...</span>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="filter-buttons">
+        <button class="filter-btn active" onclick="filterRequests('all')">All Requests</button>
+        <button class="filter-btn" onclick="filterRequests('morning')">Morning</button>
+        <button class="filter-btn" onclick="filterRequests('afternoon')">Afternoon</button>
+        <button class="filter-btn" onclick="filterRequests('recent')">Recent</button>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading swap requests...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" class="error-state" style="display: none;">
+        <p>Failed to load requests. Please try again.</p>
+        <button onclick="loadSwapRequests()" class="retry-btn">Retry</button>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="empty-state" style="display: none;">
+        <div class="empty-icon">📭</div>
+        <p>No swap requests at the moment.</p>
+    </div>
+
+    <!-- Requests Grid -->
+    <div class="requests-grid" id="requestsGrid" style="display: none;">
+        <!-- Requests will be populated here -->
+    </div>
+</div>
+
+<!-- Actions Bar -->
+<div class="actions-bar fade-in">
+    <a href="/home.html" class="action-btn btn-secondary">
+        🏠 Back to Home
+    </a>
+</div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal-overlay" id="confirmationModal">
+    <div class="modal">
+        <h3 id="modalTitle">Confirm Action</h3>
+        <p id="modalMessage">Are you sure?</p>
+        <div class="modal-buttons">
+            <button class="modal-btn btn-cancel" onclick="hideModal()">Cancel</button>
+            <button class="modal-btn btn-confirm" id="confirmBtn" onclick="executeAction()">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- Logout Modal -->
+<div class="modal-overlay" id="logoutModal">
+    <div class="modal">
+        <h3>Confirm Logout</h3>
+        <p>Are you sure you want to logout?</p>
+        <div class="modal-buttons">
+            <button class="modal-btn btn-cancel" onclick="hideLogout()">Cancel</button>
+            <button class="modal-btn btn-confirm" onclick="confirmLogout()">Logout</button>
+        </div>
+    </div>
+</div>
+
+<!-- Success/Error Toast -->
+<div class="toast" id="toast">
+    <span id="toastMessage"></span>
+</div>
+
+<script>
+let allRequests = [];
+let currentFilter = 'all';
+let pendingAction = null;
+
+// Load requests on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadSwapRequests();
+    loadUserInfo();
+});
+
+// Fetch swap requests from backend
+async function loadSwapRequests() {
+    const loadingState = document.getElementById('loadingState');
+    const errorState = document.getElementById('errorState');
+    const emptyState = document.getElementById('emptyState');
+    const requestsGrid = document.getElementById('requestsGrid');
+
+    try {
+        loadingState.style.display = 'block';
+        errorState.style.display = 'none';
+        emptyState.style.display = 'none';
+        requestsGrid.style.display = 'none';
+
+        // Get teacherId from localStorage
+        const teacherId = localStorage.getItem('userId');
+
+        const response = await fetch(`/teacher/getSwapRequests`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({ teacherId: teacherId })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        
+        loadingState.style.display = 'none';
+
+        if (result.success && result.data.length > 0) {
+            allRequests = result.data;
+            renderRequests(allRequests);
+            updateRequestsCount(allRequests.length);
+            requestsGrid.style.display = 'grid';
+        } else {
+            emptyState.style.display = 'block';
+            updateRequestsCount(0);
+        }
+
+    } catch (error) {
+        console.error('Error loading swap requests:', error);
+        loadingState.style.display = 'none';
+        errorState.style.display = 'block';
+    }
+}
+
+// Render swap requests
+function renderRequests(requests) {
+    const requestsGrid = document.getElementById('requestsGrid');
+    requestsGrid.innerHTML = '';
+
+    requests.forEach((request, index) => {
+        const requestItem = document.createElement('div');
+        requestItem.className = 'request-item stagger-in';
+        requestItem.style.animationDelay = `${index * 0.1}s`;
+
+        requestItem.innerHTML = `
+            <div class="request-header">
+                <div class="requester-info">
+                    <div class="requester-avatar">${getInitials(request.requesterName)}</div>
+                    <div class="requester-details">
+                        <div class="requester-name">${request.requesterName}</div>
+                        <div class="requester-department">${request.requesterDepartment}</div>
+                    </div>
+                </div>
+                <div class="request-time">${formatTimeAgo(request.requestedAt)}</div>
+            </div>
+
+            <div class="swap-details">
+                <div class="swap-column">
+                    <div class="swap-label">Your Duty</div>
+                    <div class="duty-card your-duty">
+                        <div class="date-info-small">
+                            <div class="date-day">${request.yourDuty.dateDay}</div>
+                            <div class="date-month">${request.yourDuty.dateMonth}</div>
+                        </div>
+                        <div class="duty-details">
+                            <div class="session-badge session-${request.yourDuty.session.toLowerCase()}">${request.yourDuty.session}</div>
+                            <div class="classroom-text">${request.yourDuty.classroom.number} - ${request.yourDuty.classroom.building}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="swap-arrow">⇄</div>
+
+                <div class="swap-column">
+                    <div class="swap-label">Their Duty</div>
+                    <div class="duty-card their-duty">
+                        <div class="date-info-small">
+                            <div class="date-day">${request.theirDuty.dateDay}</div>
+                            <div class="date-month">${request.theirDuty.dateMonth}</div>
+                        </div>
+                        <div class="duty-details">
+                            <div class="session-badge session-${request.theirDuty.session.toLowerCase()}">${request.theirDuty.session}</div>
+                            <div class="classroom-text">${request.theirDuty.classroom.number} - ${request.theirDuty.classroom.building}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            ${request.reason ? `<div class="request-reason"><strong>Reason:</strong> ${request.reason}</div>` : ''}
+
+            <div class="request-actions">
+                <button class="action-btn btn-reject" onclick="handleReject('${request.id}', '${request.requesterName}')">
+                    ✕ Reject
+                </button>
+                <button class="action-btn btn-accept" onclick="handleAccept('${request.id}', '${request.requesterName}')">
+                    ✓ Accept Swap
+                </button>
+            </div>
+        `;
+
+        requestsGrid.appendChild(requestItem);
+    });
+}
+
+// Filter requests
+function filterRequests(type) {
+    const buttons = document.querySelectorAll('.filter-btn');
+    
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    currentFilter = type;
+
+    let filteredRequests = allRequests;
+    
+    switch(type) {
+        case 'morning':
+            filteredRequests = allRequests.filter(r => 
+                r.yourDuty.session === 'Morning' || r.theirDuty.session === 'Morning'
+            );
+            break;
+        case 'afternoon':
+            filteredRequests = allRequests.filter(r => 
+                r.yourDuty.session === 'Afternoon' || r.theirDuty.session === 'Afternoon'
+            );
+            break;
+        case 'recent':
+            filteredRequests = allRequests.filter(r => {
+                const requestDate = new Date(r.requestedAt);
+                const daysDiff = (new Date() - requestDate) / (1000 * 60 * 60 * 24);
+                return daysDiff <= 7;
+            });
+            break;
+        default:
+            filteredRequests = allRequests;
+    }
+
+    renderRequests(filteredRequests);
+    updateRequestsCount(filteredRequests.length);
+}
+
+// Handle accept action
+function handleAccept(requestId, requesterName) {
+    pendingAction = {
+        type: 'accept',
+        requestId: requestId,
+        requesterName: requesterName
+    };
+
+    document.getElementById('modalTitle').textContent = 'Accept Swap Request';
+    document.getElementById('modalMessage').textContent = `Are you sure you want to accept the swap request from ${requesterName}? This will exchange your exam duties.`;
+    document.getElementById('confirmBtn').className = 'modal-btn btn-confirm btn-accept';
+    document.getElementById('confirmationModal').classList.add('show');
+}
+
+// Handle reject action
+function handleReject(requestId, requesterName) {
+    pendingAction = {
+        type: 'reject',
+        requestId: requestId,
+        requesterName: requesterName
+    };
+
+    document.getElementById('modalTitle').textContent = 'Reject Swap Request';
+    document.getElementById('modalMessage').textContent = `Are you sure you want to reject the swap request from ${requesterName}?`;
+    document.getElementById('confirmBtn').className = 'modal-btn btn-confirm btn-reject-confirm';
+    document.getElementById('confirmationModal').classList.add('show');
+}
+
+// Execute the pending action
+async function executeAction() {
+    if (!pendingAction) return;
+
+    hideModal();
+
+    const teacherId = localStorage.getItem('userId');
+    const endpoint = pendingAction.type === 'accept' ? '/teacher/acceptSwap' : '/teacher/rejectSwap';
+
+    try {
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                requestId: pendingAction.requestId,
+                teacherId: teacherId
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showToast(
+                pendingAction.type === 'accept' 
+                    ? `✓ Swap accepted successfully!` 
+                    : `Swap request rejected.`,
+                'success'
+            );
+            
+            // Reload requests after 1 second
+            setTimeout(() => {
+                loadSwapRequests();
+            }, 1000);
+        } else {
+            showToast(`Failed to ${pendingAction.type} swap request. Please try again.`, 'error');
+        }
+
+    } catch (error) {
+        console.error(`Error ${pendingAction.type}ing swap:`, error);
+        showToast(`An error occurred. Please try again.`, 'error');
+    }
+
+    pendingAction = null;
+}
+
+// Utility functions
+function getInitials(name) {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+}
+
+function formatTimeAgo(timestamp) {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+}
+
+function updateRequestsCount(count) {
+    document.getElementById('requestsCount').textContent = `${count} Request${count !== 1 ? 's' : ''}`;
+}
+
+function loadUserInfo() {
+    const userName = localStorage.getItem('teacherName') || 'Prof. Johnson';
+    const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
+    
+    document.getElementById('userName').textContent = userName;
+    document.getElementById('userAvatar').textContent = userInitials;
+}
+
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
+    
+    toastMessage.textContent = message;
+    toast.className = `toast ${type}`;
+    toast.classList.add('show');
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+function hideModal() {
+    document.getElementById('confirmationModal').classList.remove('show');
+    pendingAction = null;
+}
+
+function goBack() {
+    window.history.back();
+}
+
+// Logout functionality
+document.getElementById('userAvatar').addEventListener('click', function() {
+    document.getElementById('logoutModal').classList.add('show');
+});
+
+function hideLogout() {
+    document.getElementById('logoutModal').classList.remove('show');
+}
+
+function confirmLogout() {
+    localStorage.clear();
+    window.location.href = '/login.html';
+}
+</script>
+</body>
+</html>

@@ -17,7 +17,7 @@
             </div>
         </header>
 
-<!-- Logout -->
+    <!-- Logout -->
     <div class="modal-overlay" id="logoutModal">
         <div class="modal">
             <h3>Confirm Logout</h3>
@@ -56,11 +56,13 @@
         </div>
 
         <!-- Notification Bar -->
-        <div class="notification-bar pulse" onclick="viewSwapRequests()">
+        <!-- ⭐ CHANGE 1: Removed onclick from the div, will add to button only -->
+        <div class="notification-bar pulse">
             <span class="notification-icon">🔔</span>
             <div class="notification-count" id="requestCount">5</div>
             <p class="notification-text">Swap Requests Pending</p>
-            <button class="view-requests-btn">View All</button>
+            <!-- ⭐ CHANGE 2: Added onclick to View All button -->
+            <button class="view-requests-btn" onclick="viewSwapRequests()">View All</button>
         </div>
     </div>
 
@@ -72,21 +74,26 @@
         <button class="nav-button btn-secondary" onclick="navigateToExams()">
             <img src="/public/exam.png" class="button-png"> <br> Exam Timetable
         </button>
-        <button class="nav-button btn-success" onclick="navigateToReports()">
+        <button class="nav-button btn-success" onclick="viewSwapRequests()">
             <img class="button-png" src="/public/history.png">  <br> History
         </button>
     </div>
-</div> 
+</div>
 
 <script>
-
-document.addEventListener('DOMContentLoaded',async function(){
-    await loadUserInfo();
+document.addEventListener('DOMContentLoaded',function(){
+    loadUserInfo();
 })
 
 function navigateToSchedule(){
-window.location.href = '/viewSchedule.html';
-}    
+    window.location.href = '/viewSchedule.html';
+}
+
+// Added function to navigate to swap requests page
+function viewSwapRequests() {
+    console.log('clicked');
+    window.location.href = window.location.origin + '/swapRequests.html';
+}
 
 // Click avatar to show logout confirmation
 document.getElementById('avatar').addEventListener('click', function() {
@@ -133,8 +140,7 @@ function confirmLogout() {
     localStorage.clear();
     window.location.href = '/login.html';
 }
+
 </script>
 </body>
-
-
 </html>
