@@ -711,7 +711,7 @@
         const datePickerModal = document.getElementById('datePickerModal');
 
         // Fetch classrooms from database
-        fetch("/coe/createExam")
+        fetch("/coe/getClassrooms")
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);

@@ -16,7 +16,7 @@ const checkSession = require('./middlewares/authMiddleware');
 const app = express();
 app.use(express.json());
 
-// CORS configuration - MUST come BEFORE session
+//CORS configuration - MUST come BEFORE session
 const allowedOrigins = ['http://localhost:3000', 'http://localhost:5000'];
 
 app.use(cors({
@@ -38,7 +38,7 @@ app.use(cors({
 
 //Initializing the session
 app.use(session({
-    secret: "exam-duty",  // replace with a secure secret
+    secret: "exam-duty",  
     resave: false,
     saveUninitialized: false,
     cookie: {
