@@ -46,7 +46,8 @@ try {
     res.status(200).json({
         success: true,
         count: transformedSchedules.length,
-        data: transformedSchedules
+        data: transformedSchedules,
+        name: req.session.user.name 
     });
 
 } catch (error) {
@@ -111,14 +112,36 @@ exports.getAllocationDetails = async (req, res) => {
       };
     });
 
-    res.status(200).json({ success: true, data: transformed });
+    res.status(200).json({ success: true, data: transformed,name:req.session.user.name});
 
   } catch (error) {
     console.error('Error fetching allocation details:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch allocation details',
-      error: error.message
+      error: error.message,
+
+    });
+  }
+};
+
+exports.getInfo = (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authenticated'
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      name: req.session.user.name
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get user info'
     });
   }
 };
