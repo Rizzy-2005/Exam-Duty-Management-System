@@ -1,10 +1,18 @@
 const mongoose = require("mongoose");
 
 const examSchema = new mongoose.Schema({
-  title: { type: String, required: true, trim: true },     
-  startDate: { type: Date, required: true },
-  endDate: { type: Date, required: true },
-  timeTablePdfUrl: { type: String, required: false, trim: true }
+  name: { type: String, required: true },                // Name of the exam
+  dates: [{ type: Date, required: true }],               // Dates on which the exam happens
+  sessions: {
+    type: [String],
+    enum: ["FN", "AN"],                                  // Forenoon / Afternoon
+    default: ["FN", "AN"]
+  },
+  expectedStudents: {
+    type: Map,
+    of: Number,
+    default: {}                                           // Stores expected student count per (date + session)
+  },
 });
 
 module.exports = mongoose.model("exams", examSchema);
