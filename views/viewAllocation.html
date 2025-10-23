@@ -5,30 +5,100 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Exam Allocation Details</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #f4f6f9;
-      padding: 30px;
       margin: 0;
     }
+
+    /* Topbar Styles */
+    .header {
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      padding: 1rem 2rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo {
+      width: 60px;
+      height: 60px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .logo img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+    }
+
+    .college-name {
+      color: white;
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .nav-menu a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .nav-menu a:hover {
+      background: rgba(255,255,255,0.15);
+    }
+
+    /* Main Container */
     .container {
       background: white;
       padding: 25px;
       border-radius: 12px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       max-width: 1400px;
-      margin: auto;
+      margin: 30px auto;
     }
+
     h1 {
       color: #2c3e50;
       margin-bottom: 10px;
     }
+
     .header-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
     }
+
     .export-btn {
       background-color: #27ae60;
       color: white;
@@ -43,28 +113,34 @@
       gap: 8px;
       transition: background-color 0.2s;
     }
+
     .export-btn:hover {
       background-color: #229954;
     }
+
     .export-btn:active {
       transform: scale(0.98);
     }
+
     .filters {
       display: flex;
       gap: 15px;
       margin: 20px 0;
       flex-wrap: wrap;
     }
+
     .filter-group {
       display: flex;
       flex-direction: column;
       gap: 5px;
     }
+
     .filter-group label {
       font-size: 14px;
       font-weight: 600;
       color: #555;
     }
+
     select {
       padding: 8px 12px;
       border: 2px solid #ddd;
@@ -73,39 +149,47 @@
       min-width: 150px;
       cursor: pointer;
     }
+
     select:focus {
       outline: none;
       border-color: #3498db;
     }
+
     .no-data {
       text-align: center;
       padding: 40px;
       color: #888;
       font-size: 16px;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
     }
+
     thead {
       background-color: #3498db;
       color: white;
     }
+
     th {
       padding: 12px;
       text-align: left;
       font-weight: 600;
       font-size: 14px;
     }
+
     td {
       padding: 12px;
       border-bottom: 1px solid #eee;
       font-size: 14px;
     }
+
     tbody tr:hover {
       background-color: #f8f9fa;
     }
+
     .session-badge {
       display: inline-block;
       padding: 4px 10px;
@@ -113,14 +197,17 @@
       font-weight: 600;
       font-size: 12px;
     }
+
     .session-FN {
       background-color: #e3f2fd;
       color: #1976d2;
     }
+
     .session-AN {
       background-color: #fff3e0;
       color: #f57c00;
     }
+
     .error {
       color: #e74c3c;
       padding: 20px;
@@ -129,11 +216,13 @@
       border-radius: 8px;
       margin-top: 20px;
     }
+
     .loading {
       text-align: center;
       padding: 40px;
       color: #666;
     }
+
     .edit-btn {
       background-color: #3498db;
       color: white;
@@ -144,9 +233,11 @@
       font-size: 13px;
       transition: background-color 0.2s;
     }
+
     .edit-btn:hover {
       background-color: #2980b9;
     }
+
     .save-btn {
       background-color: #27ae60;
       color: white;
@@ -158,9 +249,11 @@
       margin-right: 5px;
       transition: background-color 0.2s;
     }
+
     .save-btn:hover {
       background-color: #229954;
     }
+
     .cancel-btn {
       background-color: #95a5a6;
       color: white;
@@ -171,9 +264,11 @@
       font-size: 13px;
       transition: background-color 0.2s;
     }
+
     .cancel-btn:hover {
       background-color: #7f8c8d;
     }
+
     .edit-select {
       padding: 6px;
       border: 2px solid #3498db;
@@ -181,6 +276,7 @@
       font-size: 13px;
       width: 100%;
     }
+
     .success-msg {
       background-color: #d4edda;
       color: #155724;
@@ -189,9 +285,45 @@
       margin: 10px 0;
       text-align: center;
     }
+
+    @media (max-width: 768px) {
+      .nav-menu {
+        gap: 1rem;
+      }
+
+      .college-name {
+        display: none;
+      }
+
+      .header-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+
+      .container {
+        margin: 15px;
+        padding: 15px;
+      }
+    }
   </style>
 </head>
 <body>
+  <!-- Topbar -->
+  <header class="header">
+    <div class="logo-section">
+      <div class="logo">
+        <img src="/public/college-logo.png" alt="college-logo">
+      </div>
+      <div class="college-name">Controller of Examiner</div>
+    </div>
+    <nav class="nav-menu">
+      <a id="homeLink">Home</a>
+      <a id="logoutLink">Logout</a>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
   <div class="container">
     <div class="header-row">
       <h1>Exam Allocation Details</h1>
@@ -235,19 +367,27 @@
     let editingRow = null;
     const examId = window.location.pathname.split('/').pop();
 
-    // Define exportToCSV in global scope
+    // Topbar Navigation
+    document.getElementById('homeLink').addEventListener('click', () => {
+      window.location.href = '/coeHome copy.html';
+    });
+
+    document.getElementById('logoutLink').addEventListener('click', () => {
+      fetch('/login/logout', { credentials: 'include' });
+      window.location.href = 'http://localhost:3000';
+    });
+
+    // Export to CSV
     window.exportToCSV = function() {
       const selectedDate = document.getElementById('dateFilter').value;
       const selectedSession = document.getElementById('sessionFilter').value;
 
-      // Filter allocations based on current filter selection
       let filtered = allAllocations.filter(a => {
         const dateMatch = selectedDate === 'all' || a.date === selectedDate;
         const sessionMatch = selectedSession === 'all' || a.session === selectedSession;
         return dateMatch && sessionMatch;
       });
 
-      // Sort by date, then session
       filtered.sort((a, b) => {
         const dateCompare = new Date(a.date) - new Date(b.date);
         if (dateCompare !== 0) return dateCompare;
@@ -259,10 +399,8 @@
         return;
       }
 
-      // Create CSV header
       let csv = 'Date,Session,Teacher,Teacher ID,Classroom,Building\n';
 
-      // Add data rows
       filtered.forEach(a => {
         const date = new Date(a.date).toLocaleDateString('en-GB', {
           day: '2-digit',
@@ -281,7 +419,6 @@
           building = a.classroomId.building || '';
         }
 
-        // Escape commas and quotes in data
         const escapeCsv = (str) => {
           str = String(str);
           if (str.includes(',') || str.includes('"') || str.includes('\n')) {
@@ -293,7 +430,6 @@
         csv += `${escapeCsv(date)},${a.session},${escapeCsv(teacherName)},${escapeCsv(teacherId)},${escapeCsv(classroomName)},${escapeCsv(building)}\n`;
       });
 
-      // Create download link
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
@@ -313,7 +449,6 @@
       try {
         console.log(`Fetching allocations for examId: ${examId}`);
         
-        // Fetch allocations
         const res = await fetch(`/coe/getAllocations/${examId}`);
 
         if (res.status === 404) {
@@ -326,11 +461,6 @@
         
         allAllocations = await res.json();
         console.log("Allocations data:", allAllocations);
-        
-        if (allAllocations.length > 0) {
-          console.log("First allocation:", allAllocations[0]);
-          console.log("Classroom data:", allAllocations[0].classroomId);
-        }
 
         if (allAllocations.length === 0) {
           document.getElementById('content').innerHTML = 
@@ -338,9 +468,7 @@
           return;
         }
 
-        // Fetch teachers and classrooms for dropdowns
         await loadTeachersAndClassrooms();
-
         populateFilters();
         displayAllocations();
 
@@ -358,12 +486,8 @@
           fetch('/coe/getClassrooms')
         ]);
 
-        if (teachersRes.ok) {
-          allTeachers = await teachersRes.json();
-        }
-        if (classroomsRes.ok) {
-          allClassrooms = await classroomsRes.json();
-        }
+        if (teachersRes.ok) allTeachers = await teachersRes.json();
+        if (classroomsRes.ok) allClassrooms = await classroomsRes.json();
 
         console.log('Loaded teachers:', allTeachers.length);
         console.log('Loaded classrooms:', allClassrooms.length);
@@ -477,11 +601,7 @@
         `;
       });
 
-      tableHTML += `
-          </tbody>
-        </table>
-      `;
-
+      tableHTML += '</tbody></table>';
       content.innerHTML = tableHTML;
     }
 
@@ -502,14 +622,12 @@
       const currentTeacherId = teacherCell.dataset.teacherId;
       const currentClassroomId = classroomCell.dataset.classroomId;
 
-      // Create teacher dropdown
       let teacherOptions = '<option value="">Select Teacher</option>';
       allTeachers.forEach(t => {
         const selected = t._id === currentTeacherId ? 'selected' : '';
         teacherOptions += `<option value="${t._id}" ${selected}>${t.name}</option>`;
       });
 
-      // Create classroom dropdown
       let classroomOptions = '<option value="">Select Classroom</option>';
       allClassrooms.forEach(c => {
         const selected = c._id === currentClassroomId ? 'selected' : '';
@@ -519,7 +637,6 @@
       teacherCell.innerHTML = `<select class="edit-select teacher-select">${teacherOptions}</select>`;
       classroomCell.innerHTML = `<select class="edit-select classroom-select">${classroomOptions}</select>`;
       
-      // Update building when classroom changes
       const classroomSelect = classroomCell.querySelector('.classroom-select');
       classroomSelect.addEventListener('change', (e) => {
         const selectedOption = e.target.options[e.target.selectedIndex];
@@ -562,10 +679,7 @@
           throw new Error('Failed to update allocation');
         }
 
-        const result = await response.json();
         showMessage('Allocation updated successfully!', 'success');
-
-        // Refresh the data
         editingRow = null;
         await loadAllocation();
 
