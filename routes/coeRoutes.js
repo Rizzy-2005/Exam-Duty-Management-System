@@ -16,6 +16,7 @@ console.log('[ROUTE HIT] /allocations/:id → ID:', req.params.id);
 });
 router.get('/getAllocations/:examId', coeController.getAllocations);
 router.get('/getExam/:id', coeController.getExamById);
+router.put('/updateAllocation/:id', coeController.updateAllocation);
 
 
 

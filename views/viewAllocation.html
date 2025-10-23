@@ -16,12 +16,38 @@
       padding: 25px;
       border-radius: 12px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      max-width: 1200px;
+      max-width: 1400px;
       margin: auto;
     }
     h1 {
       color: #2c3e50;
       margin-bottom: 10px;
+    }
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .export-btn {
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background-color 0.2s;
+    }
+    .export-btn:hover {
+      background-color: #229954;
+    }
+    .export-btn:active {
+      transform: scale(0.98);
     }
     .filters {
       display: flex;
@@ -108,11 +134,78 @@
       padding: 40px;
       color: #666;
     }
+    .edit-btn {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background-color 0.2s;
+    }
+    .edit-btn:hover {
+      background-color: #2980b9;
+    }
+    .save-btn {
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      margin-right: 5px;
+      transition: background-color 0.2s;
+    }
+    .save-btn:hover {
+      background-color: #229954;
+    }
+    .cancel-btn {
+      background-color: #95a5a6;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background-color 0.2s;
+    }
+    .cancel-btn:hover {
+      background-color: #7f8c8d;
+    }
+    .edit-select {
+      padding: 6px;
+      border: 2px solid #3498db;
+      border-radius: 4px;
+      font-size: 13px;
+      width: 100%;
+    }
+    .success-msg {
+      background-color: #d4edda;
+      color: #155724;
+      padding: 10px;
+      border-radius: 4px;
+      margin: 10px 0;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Exam Allocation Details</h1>
+    <div class="header-row">
+      <h1>Exam Allocation Details</h1>
+      <button class="export-btn" onclick="exportToCSV()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Export as CSV
+      </button>
+    </div>
+    
+    <div id="message"></div>
     
     <div class="filters">
       <div class="filter-group">
@@ -137,11 +230,90 @@
 
   <script>
     let allAllocations = [];
+    let allTeachers = [];
+    let allClassrooms = [];
+    let editingRow = null;
     const examId = window.location.pathname.split('/').pop();
+
+    // Define exportToCSV in global scope
+    window.exportToCSV = function() {
+      const selectedDate = document.getElementById('dateFilter').value;
+      const selectedSession = document.getElementById('sessionFilter').value;
+
+      // Filter allocations based on current filter selection
+      let filtered = allAllocations.filter(a => {
+        const dateMatch = selectedDate === 'all' || a.date === selectedDate;
+        const sessionMatch = selectedSession === 'all' || a.session === selectedSession;
+        return dateMatch && sessionMatch;
+      });
+
+      // Sort by date, then session
+      filtered.sort((a, b) => {
+        const dateCompare = new Date(a.date) - new Date(b.date);
+        if (dateCompare !== 0) return dateCompare;
+        return a.session.localeCompare(b.session);
+      });
+
+      if (filtered.length === 0) {
+        showMessage('No data to export', 'error');
+        return;
+      }
+
+      // Create CSV header
+      let csv = 'Date,Session,Teacher,Teacher ID,Classroom,Building\n';
+
+      // Add data rows
+      filtered.forEach(a => {
+        const date = new Date(a.date).toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        });
+        
+        const teacherName = a.teacherId?.name || 'Not Assigned';
+        const teacherId = a.teacherId?.userId || '';
+        
+        let classroomName = 'Not Assigned';
+        let building = '';
+        
+        if (a.classroomId && typeof a.classroomId === 'object') {
+          classroomName = a.classroomId.name || 'Not Assigned';
+          building = a.classroomId.building || '';
+        }
+
+        // Escape commas and quotes in data
+        const escapeCsv = (str) => {
+          str = String(str);
+          if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+            return `"${str.replace(/"/g, '""')}"`;
+          }
+          return str;
+        };
+
+        csv += `${escapeCsv(date)},${a.session},${escapeCsv(teacherName)},${escapeCsv(teacherId)},${escapeCsv(classroomName)},${escapeCsv(building)}\n`;
+      });
+
+      // Create download link
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', `exam_allocations_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showMessage('CSV exported successfully!', 'success');
+    };
 
     async function loadAllocation() {
       try {
         console.log(`Fetching allocations for examId: ${examId}`);
+        
+        // Fetch allocations
         const res = await fetch(`/coe/getAllocations/${examId}`);
 
         if (res.status === 404) {
@@ -155,7 +327,6 @@
         allAllocations = await res.json();
         console.log("Allocations data:", allAllocations);
         
-        // Debug: Check first allocation structure
         if (allAllocations.length > 0) {
           console.log("First allocation:", allAllocations[0]);
           console.log("Classroom data:", allAllocations[0].classroomId);
@@ -167,6 +338,9 @@
           return;
         }
 
+        // Fetch teachers and classrooms for dropdowns
+        await loadTeachersAndClassrooms();
+
         populateFilters();
         displayAllocations();
 
@@ -174,6 +348,27 @@
         console.error(err);
         document.getElementById('content').innerHTML =
           `<div class="error">Failed to load allocations: ${err.message}</div>`;
+      }
+    }
+
+    async function loadTeachersAndClassrooms() {
+      try {
+        const [teachersRes, classroomsRes] = await Promise.all([
+          fetch('/coe/getTeachers'),
+          fetch('/coe/getClassrooms')
+        ]);
+
+        if (teachersRes.ok) {
+          allTeachers = await teachersRes.json();
+        }
+        if (classroomsRes.ok) {
+          allClassrooms = await classroomsRes.json();
+        }
+
+        console.log('Loaded teachers:', allTeachers.length);
+        console.log('Loaded classrooms:', allClassrooms.length);
+      } catch (err) {
+        console.error('Error loading teachers/classrooms:', err);
       }
     }
 
@@ -220,7 +415,6 @@
         return dateMatch && sessionMatch;
       });
 
-      // Sort by date, then session
       filtered.sort((a, b) => {
         const dateCompare = new Date(a.date) - new Date(b.date);
         if (dateCompare !== 0) return dateCompare;
@@ -243,6 +437,7 @@
               <th>Teacher</th>
               <th>Classroom</th>
               <th>Building</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -255,31 +450,29 @@
           year: 'numeric'
         });
         
-        // Handle teacher data
         const teacherName = a.teacherId?.name || 'Not Assigned';
+        const teacherId = a.teacherId?._id || '';
         
-        // Handle classroom data - check if it's populated
         let classroomName = 'Not Assigned';
         let building = '—';
+        let classroomId = '';
         
-        if (a.classroomId) {
-          // If classroomId is populated as an object
-          if (typeof a.classroomId === 'object') {
-            classroomName = a.classroomId.name || 'Not Assigned';
-            building = a.classroomId.building || '—';
-          } else {
-            // If it's still just an ID string
-            classroomName = 'ID: ' + a.classroomId;
-          }
+        if (a.classroomId && typeof a.classroomId === 'object') {
+          classroomName = a.classroomId.name || 'Not Assigned';
+          building = a.classroomId.building || '—';
+          classroomId = a.classroomId._id || '';
         }
 
         tableHTML += `
-          <tr>
+          <tr data-allocation-id="${a._id}">
             <td>${date}</td>
             <td><span class="session-badge session-${a.session}">${a.session}</span></td>
-            <td>${teacherName}</td>
-            <td>${classroomName}</td>
-            <td>${building}</td>
+            <td class="teacher-cell" data-teacher-id="${teacherId}">${teacherName}</td>
+            <td class="classroom-cell" data-classroom-id="${classroomId}">${classroomName}</td>
+            <td class="building-cell">${building}</td>
+            <td>
+              <button class="edit-btn" onclick="editRow('${a._id}')">Update</button>
+            </td>
           </tr>
         `;
       });
@@ -290,6 +483,112 @@
       `;
 
       content.innerHTML = tableHTML;
+    }
+
+    function editRow(allocationId) {
+      if (editingRow) {
+        showMessage('Please save or cancel the current edit first', 'error');
+        return;
+      }
+
+      editingRow = allocationId;
+      const row = document.querySelector(`tr[data-allocation-id="${allocationId}"]`);
+      
+      const teacherCell = row.querySelector('.teacher-cell');
+      const classroomCell = row.querySelector('.classroom-cell');
+      const buildingCell = row.querySelector('.building-cell');
+      const actionCell = row.querySelector('td:last-child');
+
+      const currentTeacherId = teacherCell.dataset.teacherId;
+      const currentClassroomId = classroomCell.dataset.classroomId;
+
+      // Create teacher dropdown
+      let teacherOptions = '<option value="">Select Teacher</option>';
+      allTeachers.forEach(t => {
+        const selected = t._id === currentTeacherId ? 'selected' : '';
+        teacherOptions += `<option value="${t._id}" ${selected}>${t.name}</option>`;
+      });
+
+      // Create classroom dropdown
+      let classroomOptions = '<option value="">Select Classroom</option>';
+      allClassrooms.forEach(c => {
+        const selected = c._id === currentClassroomId ? 'selected' : '';
+        classroomOptions += `<option value="${c._id}" data-building="${c.building}" ${selected}>${c.name}</option>`;
+      });
+
+      teacherCell.innerHTML = `<select class="edit-select teacher-select">${teacherOptions}</select>`;
+      classroomCell.innerHTML = `<select class="edit-select classroom-select">${classroomOptions}</select>`;
+      
+      // Update building when classroom changes
+      const classroomSelect = classroomCell.querySelector('.classroom-select');
+      classroomSelect.addEventListener('change', (e) => {
+        const selectedOption = e.target.options[e.target.selectedIndex];
+        const building = selectedOption.dataset.building || '—';
+        buildingCell.textContent = building;
+      });
+
+      actionCell.innerHTML = `
+        <button class="save-btn" onclick="saveRow('${allocationId}')">Save</button>
+        <button class="cancel-btn" onclick="cancelEdit('${allocationId}')">Cancel</button>
+      `;
+    }
+
+    async function saveRow(allocationId) {
+      const row = document.querySelector(`tr[data-allocation-id="${allocationId}"]`);
+      const teacherSelect = row.querySelector('.teacher-select');
+      const classroomSelect = row.querySelector('.classroom-select');
+
+      const newTeacherId = teacherSelect.value;
+      const newClassroomId = classroomSelect.value;
+
+      if (!newTeacherId || !newClassroomId) {
+        showMessage('Please select both teacher and classroom', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/coe/updateAllocation/${allocationId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            teacherId: newTeacherId,
+            classroomId: newClassroomId
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update allocation');
+        }
+
+        const result = await response.json();
+        showMessage('Allocation updated successfully!', 'success');
+
+        // Refresh the data
+        editingRow = null;
+        await loadAllocation();
+
+      } catch (err) {
+        console.error('Error updating allocation:', err);
+        showMessage('Error updating allocation: ' + err.message, 'error');
+      }
+    }
+
+    function cancelEdit(allocationId) {
+      editingRow = null;
+      displayAllocations();
+    }
+
+    function showMessage(text, type) {
+      const messageDiv = document.getElementById('message');
+      messageDiv.className = type === 'success' ? 'success-msg' : 'error';
+      messageDiv.textContent = text;
+      
+      setTimeout(() => {
+        messageDiv.textContent = '';
+        messageDiv.className = '';
+      }, 3000);
     }
 
     loadAllocation();
