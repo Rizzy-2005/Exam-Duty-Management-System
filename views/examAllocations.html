@@ -103,8 +103,8 @@
       <h1>Exam Allocations</h1>
     </div>
     <div class="user-info">
-      <span id="userName">Prof. Johnson</span>
-      <div class="user-avatar" id="userAvatar">PJ</div>
+      <span id="userName"></span>
+      <div class="user-avatar" id="userAvatar"></div>
     </div>
   </header>
   <!-- Add date filter above allocations -->
@@ -152,29 +152,28 @@ function getScheduleIdFromURL() {
 
 // Fetch allocations from backend
 async function loadAllocations() {
-  const scheduleId = getScheduleIdFromURL();
-  const teacherId = localStorage.getItem('userId'); // current teacher
+  const scheduleId = getScheduleIdFromURL();// current teacher
   const detailsGrid = document.getElementById("detailsGrid");
   const examDateTitle = document.getElementById("examDateTitle");
 
-  if (!scheduleId || !teacherId) {
+  if (!scheduleId) {
     examDateTitle.textContent = 'No schedule or teacher selected';
     return;
   }
 
   try {
-    const response = await fetch('http://localhost:3000/teacher/getAllocationDetails', {
+    const response = await fetch('http://localhost:5000/teacher/getAllocationDetails', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ scheduleId, teacherId })
+      body: JSON.stringify({ scheduleId })
     });
 
     const result = await response.json();
-    console.log(JSON.stringify(result))
 
     if (result.success && result.data.length > 0) {
       // Add date components for display
+      loadUserInfo(result.name)
       allAllocations = result.data.map(item => {
         const dateObj = new Date(item.date);
         return {
@@ -247,7 +246,6 @@ function closeModal() {
 async function sendSwapRequest() {
   const message = document.getElementById("swapMessage").value;
   const scheduleId = getScheduleIdFromURL();
-  const teacherId = localStorage.getItem('userId');
   const toTeacherId = selectedAllocation.teacherId._id || selectedAllocation.teacherId;
   
   // Get examId from the correct path
@@ -255,7 +253,6 @@ async function sendSwapRequest() {
   
   console.log("Request data:", { 
     scheduleId, 
-    fromTeacherId: teacherId, 
     toTeacherId, 
     message, 
     examId 
@@ -267,13 +264,12 @@ async function sendSwapRequest() {
   }
 
   try {
-    const response = await fetch('http://localhost:3000/requests/send', {
+    const response = await fetch('http://localhost:5000/requests/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({ 
-        scheduleId, 
-        fromTeacherId: teacherId, 
+        scheduleId,  
         toTeacherId: toTeacherId, 
         message: message, 
         examId: examId 
@@ -301,8 +297,7 @@ function goBack() {
 }
 
 // Load user info
-function loadUserInfo() {
-  const userName = localStorage.getItem('teacherName') || 'Prof. Johnson';
+function loadUserInfo(userName) {
   const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
   document.getElementById('userName').textContent = userName;
   document.getElementById('userAvatar').textContent = userInitials;
