@@ -1,6 +1,6 @@
 //Importing the models
 const Users = require("../models/userModel");
-const classroom = require('../models/classroomModel');
+const Classroom = require('../models/classroomModel');
 const Exam = require("../models/examModel");
 const Allocation = require("../models/allocationModel");
 
@@ -31,7 +31,7 @@ exports.addTeacher = async (req, res) => {
 
 exports.loadClassrooms = async (req,res)=>{
         try {
-        const classes = await classroom.find({}, { name: 1, building: 1, _id: 1 });
+        const classes = await Classroom.find({}, { name: 1, building: 1, _id: 1 });
 
         if (!classes || classes.length === 0) {
             return res.status(404).json({ message: "No classrooms were found" });
@@ -99,7 +99,7 @@ const autoAllocateTeachers = async (examId, selectedClassrooms, unavailableTeach
   });
 
   //Get classrooms
-  const classrooms = await classroom.find({ name: { $in: selectedClassrooms } });
+  const classrooms = await Classroom.find({ name: { $in: selectedClassrooms } });
 
   //Handle expectedStudents as object
   let expectedStudentsObj = {};
@@ -272,5 +272,71 @@ exports.updateAllocation = async (req, res) => {
       message: 'Server error updating allocation',
       error: error.message 
     });
+  }
+};
+
+exports.getAllTeachers = async (req, res) => {
+  try {
+    const teachers = await Users.find({ role: "Teacher" }).select("-password");
+    res.json(teachers);
+  } catch (err) {
+    console.error("Error fetching teachers:", err);
+    res.status(500).json({ message: "Failed to fetch teachers" });
+  }
+};
+
+exports.deleteTeacher = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const teacher = await Users.findOneAndDelete({ _id: id, role: "Teacher" });
+
+    if (!teacher)
+      return res.status(404).json({ message: "Teacher not found" });
+
+    res.json({ message: `Teacher ${teacher.name} deleted successfully` });
+  } catch (err) {
+    console.error("Error deleting teacher:", err);
+    res.status(500).json({ message: "Failed to delete teacher" });
+  }
+};
+
+exports.getAllClassrooms = async (req, res) => {
+  try {
+    const classrooms = await Classroom.find();
+    res.json(classrooms);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch classrooms" });
+  }
+};
+
+//Add classroom
+exports.addClassroom = async (req, res) => {
+  try {
+    const { name, building, capacity } = req.body;
+    if (!name || !building || !capacity) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+    const classroom = new Classroom({ name, building, capacity });
+    await classroom.save();
+    res.json({ message: "Classroom added successfully!" });
+  } catch (err) {
+    res.status(500).json({ message: "Error adding classroom" });
+  }
+};
+
+//Update classroom
+exports.updateClassroom = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, building, capacity } = req.body;
+    const updated = await Classroom.findByIdAndUpdate(
+      id,
+      { name, building, capacity },
+      { new: true }
+    );
+    if (!updated) return res.status(404).json({ message: "Classroom not found" });
+    res.json({ message: "Classroom updated successfully!" });
+  } catch (err) {
+    res.status(500).json({ message: "Error updating classroom" });
   }
 };

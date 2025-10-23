@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Controller of Examiner - Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      padding: 1.2rem 2.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo {
+      width: 55px;
+      height: 55px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .logo img {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+    }
+
+    .college-name {
+      color: white;
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .nav-menu a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+    }
+
+    .nav-menu a:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    /* Dashboard Container */
+    .dashboard-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+    }
+
+    .dashboard-title {
+      font-size: 2rem;
+      color: #2c3e50;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .dashboard-subtitle {
+      color: #7f8c8d;
+      margin-bottom: 4rem;
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    /* Card Grid - 2x2 Square Layout */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 320px);
+      grid-template-rows: repeat(2, 320px);
+      gap: 3rem;
+      position: relative;
+    }
+
+    /* Card Styling */
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      border: 2px solid transparent;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.6s;
+    }
+
+    .card:hover::before {
+      transform: translateX(100%);
+    }
+
+    .card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+      border-color: rgba(102, 126, 234, 0.3);
+    }
+
+    .card-icon {
+      font-size: 3.5rem;
+      width: 90px;
+      height: 90px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      margin-bottom: 1.5rem;
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover .card-icon {
+      transform: scale(1.1) rotate(5deg);
+    }
+
+    .card h3 {
+      font-size: 1.4rem;
+      color: #2c3e50;
+      margin-bottom: 0.8rem;
+      font-weight: 600;
+    }
+
+    .card p {
+      font-size: 0.95rem;
+      color: #7f8c8d;
+      line-height: 1.6;
+    }
+
+    /* Card Colors */
+    .card:nth-child(1) .card-icon {
+      background: linear-gradient(135deg, #ff7eb3, #ff758c);
+      box-shadow: 0 8px 20px rgba(255, 126, 179, 0.3);
+    }
+
+    .card:nth-child(2) .card-icon {
+      background: linear-gradient(135deg, #6a85b6, #bac8e0);
+      box-shadow: 0 8px 20px rgba(106, 133, 182, 0.3);
+    }
+
+    .card:nth-child(3) .card-icon {
+      background: linear-gradient(135deg, #43cea2, #185a9d);
+      box-shadow: 0 8px 20px rgba(67, 206, 162, 0.3);
+    }
+
+    .card:nth-child(4) .card-icon {
+      background: linear-gradient(135deg, #ff9966, #ff5e62);
+      box-shadow: 0 8px 20px rgba(255, 153, 102, 0.3);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.show {
+      display: flex;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal {
+      background: white;
+      border-radius: 18px;
+      padding: 2rem 2.5rem;
+      max-width: 420px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from { 
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      to { 
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal h3 {
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+      color: #2c3e50;
+    }
+
+    .modal p {
+      color: #7f8c8d;
+      margin-bottom: 2rem;
+      font-size: 1rem;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .modal-btn {
+      padding: 0.75rem 2rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+    }
+
+    .btn-cancel {
+      background: #e0e0e0;
+      color: #555;
+    }
+
+    .btn-cancel:hover {
+      background: #d0d0d0;
+      transform: translateY(-2px);
+    }
+
+    .btn-confirm {
+      background: linear-gradient(135deg, #f44336, #d32f2f);
+      color: white;
+      box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+    }
+
+    .btn-confirm:hover {
+      background: linear-gradient(135deg, #d32f2f, #c62828);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header {
+        padding: 1rem 1.5rem;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .college-name {
+        font-size: 1.2rem;
+      }
+
+      .dashboard-wrapper {
+        padding: 2rem 1rem;
+      }
+
+      .dashboard-title {
+        font-size: 1.5rem;
+      }
+
+      .card-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        gap: 1.5rem;
+        width: 100%;
+        max-width: 320px;
+      }
+
+      .card {
+        height: auto;
+        min-height: 280px;
+      }
+
+      .modal-buttons {
+        flex-direction: column;
+      }
+
+      .modal-btn {
+        width: 100%;
+      }
+    }
+
+    @media (min-width: 769px) and (max-width: 900px) {
+      .card-grid {
+        grid-template-columns: repeat(2, 280px);
+        grid-template-rows: repeat(2, 280px);
+        gap: 2rem;
+      }
+
+      .card {
+        padding: 2rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo-section">
+      <div class="logo">
+        <img src="./public/college-logo.png" alt="college-logo" />
+      </div>
+      <div class="college-name">Controller of Examiner</div>
+    </div>
+    <nav class="nav-menu">
+      <a href="#">Home</a>
+      <a href="#" id="logout">Logout</a>
+    </nav>
+  </header>
+
+  <div class="dashboard-wrapper">
+    <h1 class="dashboard-title"><b>Examination Management</b></h1>
+    <p class="dashboard-subtitle">Manage exams, allocations, faculty, and reports efficiently</p>
+
+    <div class="card-grid">
+      <div class="card" id="createExam">
+        <div class="card-icon">📝</div>
+        <h3>Create Exam</h3>
+        <p>Plan and schedule upcoming exams</p>
+      </div>
+
+      <div class="card" id="allocations">
+        <div class="card-icon">📋</div>
+        <h3>Manage Allocations</h3>
+        <p>Review allocations for exams</p>
+      </div>
+
+      <div class="card" id="manageTeachers">
+        <div class="card-icon">👩‍🏫</div>
+        <h3>Faculty Management</h3>
+        <p>View and delete of faculty</p>
+      </div>
+
+      <div class="card" id="manageClassrooms">
+        <div class="card-icon">📊</div>
+        <h3>Manage Classrooms</h3>
+        <p>Configure and organize classrooms</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="logoutModal">
+    <div class="modal">
+      <h3>Confirm Logout</h3>
+      <p>Are you sure you want to logout?</p>
+      <div class="modal-buttons">
+        <button class="modal-btn btn-cancel" onclick="hideLogout()">Cancel</button>
+        <button class="modal-btn btn-confirm" onclick="confirmLogout()">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("logout").addEventListener("click", (e) => {
+      e.preventDefault();
+      document.getElementById("logoutModal").classList.add("show");
+    });
+
+    function hideLogout() {
+      document.getElementById("logoutModal").classList.remove("show");
+    }
+
+    function confirmLogout() {
+      fetch("/login/logout", { credentials: "include" });
+      window.location.href = "http://localhost:3000";
+    }
+
+    // Redirects
+    document.getElementById("createExam").onclick = () => (window.location.href = "createExam.html");
+    document.getElementById("allocations").onclick = () => (window.location.href = "showAllocations.html");
+    document.getElementById("manageTeachers").onclick = () => (window.location.href = "manageTeacher.html");
+    document.getElementById("manageClassrooms").onclick = () => (window.location.href = "manageClassrooms.html");
+  </script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Classrooms</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background-color: #f5f7fa;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 50px auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      padding: 30px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #1e3a8a;
+      font-weight: 600;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .add-btn {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .add-btn:hover {
+      background-color: #1d4ed8;
+      transform: scale(1.03);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #2563eb;
+      color: white;
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+
+    tr:hover {
+      background-color: #e8f0fe;
+    }
+
+    .edit-btn {
+      background: none;
+      border: none;
+      color: #2563eb;
+      font-size: 20px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .edit-btn:hover {
+      color: #1d4ed8;
+      transform: scale(1.2);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      width: 400px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .modal-content input {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    .modal-content button {
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #2563eb;
+      color: white;
+      font-weight: 500;
+    }
+
+    .modal-content button:hover {
+      background-color: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-bar">
+      <h2>Manage Classrooms</h2>
+      <button class="add-btn" onclick="openAddModal()">+ Add Classroom</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Classroom</th>
+          <th>Building</th>
+          <th>Capacity</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="classroomBody">
+        <tr><td colspan="5" style="text-align:center;">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal" id="classroomModal">
+    <div class="modal-content">
+      <h3 id="modalTitle">Add Classroom</h3>
+      <input type="text" id="name" placeholder="Classroom Name" />
+      <input type="text" id="building" placeholder="Building Name" />
+      <input type="number" id="capacity" placeholder="Capacity" />
+      <div style="display:flex;justify-content:space-between;">
+        <button onclick="closeModal()">Cancel</button>
+        <button id="saveBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "http://localhost:5000/coe/classrooms";
+    const modal = document.getElementById("classroomModal");
+    const nameInput = document.getElementById("name");
+    const buildingInput = document.getElementById("building");
+    const capacityInput = document.getElementById("capacity");
+    const saveBtn = document.getElementById("saveBtn");
+    let editingId = null;
+
+    async function fetchClassrooms() {
+      const tbody = document.getElementById("classroomBody");
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        if (!data.length) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No classrooms found</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = data.map((c, i) => `
+          <tr>
+            <td>${i + 1}</td>
+            <td>${c.name}</td>
+            <td>${c.building}</td>
+            <td>${c.capacity}</td>
+            <td><button class="edit-btn" onclick="openEditModal('${c._id}', '${c.name}', '${c.building}', ${c.capacity})">✏️</button></td>
+          </tr>
+        `).join("");
+      } catch {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Error loading data</td></tr>`;
+      }
+    }
+
+    function openAddModal() {
+      editingId = null;
+      document.getElementById("modalTitle").textContent = "Add Classroom";
+      nameInput.value = buildingInput.value = capacityInput.value = "";
+      modal.style.display = "flex";
+    }
+
+    function openEditModal(id, name, building, capacity) {
+      editingId = id;
+      document.getElementById("modalTitle").textContent = "Edit Classroom";
+      nameInput.value = name;
+      buildingInput.value = building;
+      capacityInput.value = capacity;
+      modal.style.display = "flex";
+    }
+
+    function closeModal() {
+      modal.style.display = "none";
+    }
+
+    saveBtn.addEventListener("click", async () => {
+      const name = nameInput.value.trim();
+      const building = buildingInput.value.trim();
+      const capacity = capacityInput.value;
+
+      if (!name || !building || !capacity) {
+        alert("Please fill all fields");
+        return;
+      }
+
+      const method = editingId ? "PUT" : "POST";
+      const url = editingId ? `${API_URL.replace("/classrooms", "")}/updateClassroom/${editingId}` : `${API_URL.replace("/classrooms", "")}/addClassroom`;
+
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, building, capacity }),
+        });
+        const data = await res.json();
+        alert(data.message);
+        closeModal();
+        fetchClassrooms();
+      } catch {
+        alert("Error saving classroom");
+      }
+    });
+
+    window.addEventListener("click", e => {
+      if (e.target === modal) closeModal();
+    });
+
+    fetchClassrooms();
+  </script>
+</body>
+</html>

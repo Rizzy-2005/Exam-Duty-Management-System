@@ -7,16 +7,24 @@
     <link rel="stylesheet" href="createExam.css">
 </head>
 <body>
+<<<<<<< HEAD:views/createExam copy.html
     <div class="topbar">
         <div style="padding-left: 75px; padding-top: 8px;padding-bottom: 8px;">
             <span style="color: white; font-size: 1.5rem; font-weight: 600;">TKM College of Engineering</span>
+=======
+    <header class="header">
+        <div class="logo-section">
+            <div class="logo">
+                    <img src="/public/college-logo.png" alt="college-logo">
+            </div>
+            <div class="college-name">Controller of Examiner</div>
+>>>>>>> 65df6b82d16fc9fcba116c62c128123b1170687f:views/createExam.html
         </div>
-        <div class="topbar-buttons">
-            <button class="topbar-btn" id='home'>Home</button>
-            <button class="topbar-btn">Notification</button>
-            <button class="topbar-btn">Logout</button>
-        </div>
-    </div>
+        <nav class="nav-menu">
+            <a href="#home" onclick="window.location.href='/coeHome copy.html'; return false;">Home</a>
+            <a href="#logout" onclick="confirmLogout()">Logout</a>
+        </nav>
+    </header>
 
     <div class="form-container">
         <h2 class="form-title">Create New Exam</h2>
@@ -162,6 +170,52 @@
             <div class="modal-actions">
                 <button class="btn-secondary" id="cancelUnavailability">Cancel</button>
                 <button class="btn-primary" id="confirmUnavailability">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="popup-overlay" id="successPopup">
+        <div class="popup-container">
+            <button class="popup-close" onclick="closePopup('successPopup')">&times;</button>
+            <div class="popup-content">
+                <div class="popup-icon success">
+                    <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="26" cy="26" r="25" fill="none" stroke="currentColor" stroke-width="2"/>
+                        <path class="checkmark" d="M14 27l8 8 16-16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <h2 class="popup-title success">Success!</h2>
+                <p class="popup-message">Exam created successfully and ready for allocation.</p>
+                <div class="popup-actions">
+                    <button class="popup-btn popup-btn-primary success-btn" onclick="redirectToAllocation()">
+                        Go to Allocation
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Popup -->
+    <div class="popup-overlay" id="errorPopup">
+        <div class="popup-container">
+            <button class="popup-close" onclick="closePopup('errorPopup')">&times;</button>
+            <div class="popup-content">
+                <div class="popup-icon error">
+                    <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="26" cy="26" r="25" fill="none" stroke="currentColor" stroke-width="2"/>
+                        <path class="xmark" d="M16 16l20 20M36 16l-20 20" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <h2 class="popup-title error">Error!</h2>
+                <p class="popup-message" id="errorMessage">Failed to create exam. Please try again.</p>
+                <div class="popup-actions">
+                    <button class="popup-btn popup-btn-secondary" onclick="closePopup('errorPopup')">
+                        Cancel
+                    </button>
+                    <button class="popup-btn popup-btn-primary" onclick="retryExamCreation()">
+                        Try Again
+                    </button>
+                </div>
             </div>
         </div>
     </div>
