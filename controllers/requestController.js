@@ -14,7 +14,7 @@ exports.sendRequest = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Cannot send request to yourself' });
     }
 
-    // Prevent sending duplicate requests for same exam
+    //Prevent sending duplicate requests for same exam
     const existing = await requests.findOne({
       fromTeacherId,
       toTeacherId,
