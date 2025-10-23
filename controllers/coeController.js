@@ -59,11 +59,10 @@ exports.getExams = async (req,res) => {
 
 exports.getTeachers = async (req, res) => {
   try {
-    // Fetch only users with role 'Teacher'
     const teachers = await Users.find(
       { role: 'Teacher' }, 
       { name: 1, userId: 1, department: 1, _id: 0 }
-    ).sort({ name: 1 }); // Sort alphabetically by name
+    ).sort({ name: 1 }); 
 
     if (!teachers || teachers.length === 0) {
       return res.status(404).json({ message: "No teachers found" });
@@ -76,12 +75,94 @@ exports.getTeachers = async (req, res) => {
   }
 };
 
+const autoAllocateTeachers = async (examId, selectedClassrooms, unavailableTeachers, exam) => {
+  //Get available teachers
+  const teachers = await Users.find({
+    role: "Teacher",
+    name: { $nin: unavailableTeachers }
+  });
+
+  //Count previous allocations for fair distribution
+  const allocationCounts = await Allocation.aggregate([
+    { $group: { _id: "$teacherId", count: { $sum: 1 } } }
+  ]);
+
+  const countMap = {};
+  allocationCounts.forEach(a => (countMap[a._id.toString()] = a.count));
+
+  //Sort teachers (less allocations first, then joining date)
+  teachers.sort((a, b) => {
+    const countA = countMap[a._id.toString()] || 0;
+    const countB = countMap[b._id.toString()] || 0;
+    if (countA !== countB) return countA - countB;
+    return new Date(a.joiningDate) - new Date(b.joiningDate);
+  });
+
+  //Get classrooms
+  const classrooms = await classroom.find({ name: { $in: selectedClassrooms } });
+
+  //Handle expectedStudents as object
+  let expectedStudentsObj = {};
+  if (exam.expectedStudents instanceof Map) {
+    exam.expectedStudents.forEach((val, key) => {
+      expectedStudentsObj[key] = val;
+    });
+  } else {
+    expectedStudentsObj = exam.expectedStudents;
+  }
+
+  //Build allocation entries
+  const allocationsToInsert = [];
+  let teacherIndex = 0;
+  console.log("First");
+  for (const date of exam.dates) {
+    for (const session of exam.sessions) {
+      const formattedDate = new Date(date).toISOString().split("T")[0];
+      const key = `${formattedDate}_${session}`;
+      const totalStudents = expectedStudentsObj[key] || 0;
+
+      if (totalStudents <= 0) continue; //skip if no students
+
+      //Sort classrooms by capacity descending
+      const sortedClassrooms = classrooms.slice().sort((a, b) => b.capacity - a.capacity);
+
+      let remainingStudents = totalStudents;
+      console.log("Total students:", totalStudents);
+      let roomIndex = 0;
+
+      while (remainingStudents > 0 && roomIndex < sortedClassrooms.length) {
+        const room = sortedClassrooms[roomIndex];
+        if (teacherIndex >= teachers.length) teacherIndex = 0;
+
+        allocationsToInsert.push({
+          examId,
+          teacherId: teachers[teacherIndex]._id,
+          classroomId: room._id,
+          date,
+          session
+        });
+
+        remainingStudents -= room.capacity;
+        teacherIndex++;
+        roomIndex++;
+      }
+
+      if (remainingStudents > 0) {
+        console.warn(`Warning: Not enough classroom capacity for ${remainingStudents} students on ${date} session ${session}`);
+      }
+    }
+  }
+
+  return await Allocation.insertMany(allocationsToInsert);
+};
+
+
 
 exports.createExam = async (req, res) => {
   try {
     const { examName, examDatesWithSessions, selectedClassrooms, unavailableTeachers } = req.body;
 
-    //Step 1: Convert frontend object to schema format
+    //Convert frontend object to schema format
     const allDates = Object.keys(examDatesWithSessions);
     const allSessions = new Set();
     const expectedStudents = new Map();
@@ -95,7 +176,7 @@ exports.createExam = async (req, res) => {
       });
     });
 
-    //Step 2: Save Exam
+    //Save Exam
     const exam = new Exam({
       name: examName,
       dates: allDates,
@@ -104,8 +185,8 @@ exports.createExam = async (req, res) => {
     });
     await exam.save();
 
-    //Step 3: Auto allocate teachers
-    //const allocations = await autoAllocateTeachers({examId: exam._id, selectedClassrooms,unavailableTeachers,exam});
+    //Auto allocate teachers
+    const allocations = await autoAllocateTeachers(exam._id, selectedClassrooms,unavailableTeachers,exam);
 
     res.status(201).json({
       success: true,
