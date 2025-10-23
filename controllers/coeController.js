@@ -67,15 +67,14 @@ const autoAllocateTeachers = async (examId, selectedClassrooms, unavailableTeach
     role: "Teacher",
     name: { $nin: unavailableTeachers }
   });
-  console.log("First");
+
   //Count previous allocations for fair distribution
   const allocationCounts = await Allocation.aggregate([
     { $group: { _id: "$teacherId", count: { $sum: 1 } } }
   ]);
-  console.log("First");
+
   const countMap = {};
   allocationCounts.forEach(a => (countMap[a._id.toString()] = a.count));
-  console.log("First");
 
   //Sort teachers (less allocations first, then joining date)
   teachers.sort((a, b) => {
@@ -84,7 +83,6 @@ const autoAllocateTeachers = async (examId, selectedClassrooms, unavailableTeach
     if (countA !== countB) return countA - countB;
     return new Date(a.joiningDate) - new Date(b.joiningDate);
   });
-  console.log("First");
 
   //Get classrooms
   const classrooms = await classroom.find({ name: { $in: selectedClassrooms } });
