@@ -12,12 +12,12 @@
         <header class="header fade-in">
             <h1>Exam Scheduling Portal</h1>
             <div class="user-info">
-                <span id="name">Welcome, Prof. Johnson</span>
-                <div class="user-avatar" id="avatar">PJ</div>
+                <span id="name"></span>
+                <div class="user-avatar" id="avatar"></div>
             </div>
         </header>
 
-<!-- Logout -->
+    <!-- Logout -->
     <div class="modal-overlay" id="logoutModal">
         <div class="modal">
             <h3>Confirm Logout</h3>
@@ -56,11 +56,13 @@
         </div>
 
         <!-- Notification Bar -->
-        <div class="notification-bar pulse" onclick="viewSwapRequests()">
+        <!-- ⭐ CHANGE 1: Removed onclick from the div, will add to button only -->
+        <div class="notification-bar pulse">
             <span class="notification-icon">🔔</span>
             <div class="notification-count" id="requestCount">5</div>
             <p class="notification-text">Swap Requests Pending</p>
-            <button class="view-requests-btn">View All</button>
+            <!-- ⭐ CHANGE 2: Added onclick to View All button -->
+            <button class="view-requests-btn" onclick="viewSwapRequests()">View All</button>
         </div>
     </div>
 
@@ -72,32 +74,26 @@
         <button class="nav-button btn-secondary" onclick="navigateToExams()">
             <img src="/public/exam.png" class="button-png"> <br> Exam Timetable
         </button>
-        <button class="nav-button btn-success" onclick="navigateToReports()">
+        <button class="nav-button btn-success" onclick="viewSwapRequests()">
             <img class="button-png" src="/public/history.png">  <br> History
         </button>
     </div>
-</div> 
+</div>
 
 <script>
-
 document.addEventListener('DOMContentLoaded',function(){
-
-    name = localStorage.getItem('teacherName');
-    const namespan = document.getElementById('name');
-    const avatarspan = document.getElementById('avatar');
-
-    namespan.textContent = `${name}`;
-    const initials = name.split(' ')
-        .map(word => word.charAt(0))
-        .join('')
-        .toUpperCase();
-
-    avatarspan.textContent = initials;
+    loadUserInfo();
 })
 
 function navigateToSchedule(){
-window.location.href = '/viewSchedule.html';
-}    
+    window.location.href = '/viewSchedule.html';
+}
+
+// Added function to navigate to swap requests page
+function viewSwapRequests() {
+    console.log('clicked');
+    window.location.href = window.location.origin + '/swapRequests.html';
+}
 
 // Click avatar to show logout confirmation
 document.getElementById('avatar').addEventListener('click', function() {
@@ -108,12 +104,43 @@ function hideLogout() {
     document.getElementById('logoutModal').classList.remove('show');
 }
 
+async function loadUserInfo() {
+    try {
+        const response = await fetch('http://localhost:5000/teacher/getUserInfo', {
+            method: 'GET',
+            credentials: 'include' // Important! Sends session cookie
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            const name = result.name;
+            
+            // Update the name display
+            document.getElementById('name').textContent = `Welcome, ${name}`;
+            
+            // Update avatar initials
+            const initials = name.split(' ')
+                .map(word => word.charAt(0))
+                .join('')
+                .toUpperCase();
+            
+            document.getElementById('avatar').textContent = initials;
+        } else {
+            // Redirect to login if not authenticated
+            window.location.href = '/login.html';
+        }
+    } catch (error) {
+        console.error('Error loading user info:', error);
+        window.location.href = '/login.html';
+    }
+}
+
 function confirmLogout() {
     localStorage.clear();
     window.location.href = '/login.html';
 }
+
 </script>
 </body>
-
-
 </html>

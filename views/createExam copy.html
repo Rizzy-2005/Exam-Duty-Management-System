@@ -26,11 +26,6 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
-        .logo {
-            height: 50px;
-            width: auto;
-        }
-
         .topbar-buttons {
             display: flex;
             gap: 1rem;
@@ -130,6 +125,51 @@
             color: #ff6b6b;
         }
 
+        .selected-dates {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+            min-height: 40px;
+        }
+
+        .date-chip {
+            display: inline-flex;
+            background: #1e3c72;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            margin: 0.25rem;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .session-badges {
+            display: inline-flex;
+            gap: 0.25rem;
+            margin-left: 0.5rem;
+        }
+
+        .session-badge {
+            background: rgba(255,255,255,0.3);
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .remove-date {
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-left: 0.5rem;
+        }
+
+        .remove-date:hover {
+            color: #ff6b6b;
+        }
+
         .submit-btn {
             width: 100%;
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
@@ -149,62 +189,6 @@
             box-shadow: 0 6px 16px rgba(40, 167, 69, 0.3);
         }
 
-        /* Date Selector Styles */
-        .date-selector-container {
-            display: flex;
-            gap: 1rem;
-            align-items: flex-end;
-        }
-
-        .date-input-wrapper {
-            flex: 1;
-        }
-
-        .add-date-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-        }
-
-        .add-date-btn:hover {
-            background: #218838;
-        }
-
-        .selected-dates {
-            margin-top: 1rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .date-chip {
-            background: #1e3c72;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
-        }
-
-        .date-chip .remove-date {
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-
-        .date-chip .remove-date:hover {
-            color: #ff6b6b;
-        }
-
-        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -214,19 +198,20 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.5);
+            overflow-y: auto;
         }
 
         .modal-content {
-    background-color: white;
-    margin: 5% auto;
-    padding: 0;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 700px;
-    max-height: 85vh; /* Limit height to viewport */
-    overflow-y: auto; /* Enable scrolling within modal */
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-}
+            background-color: white;
+            margin: 3% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
 
         .modal-header {
             display: flex;
@@ -255,8 +240,6 @@
 
         .modal-body {
             padding: 1.5rem;
-            max-height: 500px;
-            overflow-y: auto;
         }
 
         .modal-actions {
@@ -265,6 +248,10 @@
             display: flex;
             justify-content: flex-end;
             gap: 1rem;
+            position: sticky;
+            bottom: 0;
+            background: white;
+            border-radius: 0 0 12px 12px;
         }
 
         .btn-primary, .btn-secondary {
@@ -416,7 +403,7 @@
 
         /* Calendar Styles */
         .calendar-container {
-            max-width: 500px;
+            max-width: 600px;
             margin: 0 auto;
         }
 
@@ -474,6 +461,7 @@
         .calendar-day {
             aspect-ratio: 1;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             border-right: 1px solid #e0e0e0;
@@ -483,13 +471,14 @@
             font-weight: 500;
             background: white;
             position: relative;
+            padding: 0.25rem;
         }
 
         .calendar-day:nth-child(7n) {
             border-right: none;
         }
 
-        .calendar-day:hover {
+        .calendar-day:hover:not(.other-month):not(.past) {
             background: #e3f2fd;
             transform: scale(1.05);
             z-index: 10;
@@ -527,21 +516,124 @@
             transform: none;
         }
 
-        .calendar-day.today {
+        .calendar-day.today .day-number {
             font-weight: bold;
             color: #ff6b6b;
         }
 
-        .calendar-day.today::after {
-            content: '';
-            position: absolute;
-            bottom: 4px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 6px;
-            height: 6px;
-            background: #ff6b6b;
-            border-radius: 50%;
+        .day-number {
+            font-size: 1rem;
+            margin-bottom: 0.15rem;
+        }
+
+        .day-sessions {
+            display: flex;
+            gap: 2px;
+            font-size: 0.65rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .day-session-indicator {
+            background: rgba(255,255,255,0.3);
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-weight: 600;
+        }
+
+        .calendar-day.selected .day-session-indicator {
+            background: rgba(255,255,255,0.4);
+        }
+
+        .session-selector {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px solid #1e3c72;
+        }
+
+        .session-selector h4 {
+            color: #1e3c72;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .session-info {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .session-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .session-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .session-item.active {
+            border-color: #1e3c72;
+            background: #f0f7ff;
+        }
+
+        .session-btn {
+            min-width: 140px;
+            padding: 0.75rem 1.5rem;
+            border: 2px solid #1e3c72;
+            background: white;
+            color: #1e3c72;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .session-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .session-btn.active {
+            background: #1e3c72;
+            color: white;
+        }
+
+        .capacity-input-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .capacity-input-group label {
+            font-weight: 500;
+            color: #333;
+            white-space: nowrap;
+        }
+
+        .capacity-input-group input {
+            flex: 1;
+            max-width: 120px;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+
+        .capacity-input-group input:disabled {
+            background: #f5f5f5;
+            cursor: not-allowed;
         }
 
         .calendar-selected-preview {
@@ -549,6 +641,39 @@
             padding: 1rem;
             background: #f8f9fa;
             border-radius: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .calendar-selected-preview strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #1e3c72;
+        }
+
+        .preview-date-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+            background: white;
+            border-radius: 4px;
+            border-left: 3px solid #1e3c72;
+        }
+
+        .preview-date-sessions {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .preview-session-badge {
+            background: #1e3c72;
+            color: white;
+            padding: 0.15rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -574,8 +699,8 @@
             </div>
 
             <div class="form-group">
-                <label>Exam Dates</label>
-                <button type="button" class="popup-btn" id="datePickerBtn">Select Dates from Calendar</button>
+                <label>Exam Dates & Sessions</label>
+                <button type="button" class="popup-btn" id="datePickerBtn">Select Dates & Sessions</button>
                 <div class="selected-dates" id="selectedDates">
                     <small style="color: #666;">No dates selected</small>
                 </div>
@@ -605,15 +730,15 @@
     <div id="datePickerModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Select Exam Dates</h3>
+                <h3>Select Exam Dates & Sessions</h3>
                 <span class="close" id="closeDatePicker">&times;</span>
             </div>
             <div class="modal-body">
                 <div class="calendar-container">
                     <div class="calendar-header">
-                        <button class="calendar-nav" id="prevMonth">&lt;</button>
+                        <button class="calendar-nav" id="prevMonth" type="button">&lt;</button>
                         <span class="calendar-month-year" id="monthYear"></span>
-                        <button class="calendar-nav" id="nextMonth">&gt;</button>
+                        <button class="calendar-nav" id="nextMonth" type="button">&gt;</button>
                     </div>
                     <div class="calendar-grid">
                         <div class="calendar-day-header">Sun</div>
@@ -626,8 +751,34 @@
                     </div>
                     <div class="calendar-grid" id="calendarDays" style="border-top: none;">
                     </div>
+                    
+                    <div class="session-selector" id="sessionSelector" style="display: none;">
+                        <h4>Select Sessions for <span id="selectedDateDisplay"></span></h4>
+                        <p class="session-info">Choose one or more sessions and set capacity for this exam date:</p>
+                        <div class="session-buttons">
+                            <div class="session-item" id="session-fn-item">
+                                <button type="button" class="session-btn" data-session="FN">
+                                    Forenoon (FN)
+                                </button>
+                                <div class="capacity-input-group">
+                                    <label for="capacity-fn">Capacity:</label>
+                                    <input type="number" id="capacity-fn" min="1" placeholder="e.g., 50" disabled>
+                                </div>
+                            </div>
+                            <div class="session-item" id="session-an-item">
+                                <button type="button" class="session-btn" data-session="AN">
+                                    Afternoon (AN)
+                                </button>
+                                <div class="capacity-input-group">
+                                    <label for="capacity-an">Capacity:</label>
+                                    <input type="number" id="capacity-an" min="1" placeholder="e.g., 50" disabled>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="calendar-selected-preview">
-                        <strong>Selected Dates:</strong>
+                        <strong>Selected Dates & Sessions:</strong>
                         <div id="previewDates" style="margin-top: 0.5rem;">
                             <small style="color: #666;">No dates selected</small>
                         </div>
@@ -635,8 +786,8 @@
                 </div>
             </div>
             <div class="modal-actions">
-                <button class="btn-secondary" id="cancelDatePicker">Cancel</button>
-                <button class="btn-primary" id="confirmDates">Confirm Selection</button>
+                <button class="btn-secondary" id="cancelDatePicker" type="button">Cancel</button>
+                <button class="btn-primary" id="confirmDates" type="button">Confirm Selection</button>
             </div>
         </div>
     </div>
@@ -700,10 +851,11 @@
         let teacherList = [];
         let unavailableTeachers = [];
         let currentBlock = '';
-        let selectedDates = [];
-        let tempSelectedDates = [];
+        let selectedDatesWithSessions = {};
+        let tempSelectedDatesWithSessions = {};
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
+        let activeDate = null;
 
         // Modal elements
         const classroomModal = document.getElementById('classroomModal');
@@ -711,7 +863,7 @@
         const datePickerModal = document.getElementById('datePickerModal');
 
         // Fetch classrooms from database
-        fetch("/coe/createExam")
+        fetch("/coe/getClassrooms")
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -733,13 +885,10 @@
                 });
 
                 console.log("Organized classrooms:", classrooms);
-                
-                // Create buttons AFTER data is fetched
                 createButtons();
             })
             .catch(err => {
                 console.error("Error fetching classrooms:", err);
-                // Use sample data if fetch fails
                 classrooms['Block A'] = ['A101', 'A102', 'A103', 'A104'];
                 classrooms['Block B'] = ['B101', 'B102', 'B103', 'B104'];
                 classrooms['Block C'] = ['C101', 'C102', 'C103', 'C104'];
@@ -756,50 +905,21 @@
             })
             .then(data => {
                 console.log("Teachers from server:", data);
-                
-                // Extract teacher names from the user objects
                 teacherList = data.map(teacher => teacher.name);
-                
                 console.log("Loaded teachers:", teacherList);
                 displayTeachers();
             })
             .catch(err => {
                 console.error("Error fetching teachers:", err);
-                // Use sample data if fetch fails
                 teacherList = ['Dr. Smith', 'Prof. Johnson', 'Ms. Davis', 'Mr. Wilson', 'Dr. Brown'];
                 console.log("Using sample teachers");
                 displayTeachers();
-            });
-
-        // Fetch teachers from database
-        fetch("/coe/getTeachers")
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log("Teachers from server:", data);
-                
-                // Assuming the API returns an array of teacher objects with a 'name' property
-                // Adjust the property name based on your actual API response
-                teacherList = data.map(teacher => teacher.name || teacher.fullName || teacher);
-                
-                console.log("Loaded teachers:", teacherList);
-            })
-            .catch(err => {
-                console.error("Error fetching teachers:", err);
-                // Use sample data if fetch fails
-                teacherList = ['Dr. Smith', 'Prof. Johnson', 'Ms. Davis', 'Mr. Wilson', 'Dr. Brown'];
-                console.log("Using sample teachers");
             });
 
         function createButtons() {
             const blockSelector = document.getElementById('blockSelector');
             blockSelector.innerHTML = '';
 
-            // Create select all button
             const allBtn = document.createElement('button');
             allBtn.id = 'selectAllBtn';
             allBtn.textContent = 'Select All';
@@ -810,7 +930,6 @@
             blockSelector.appendChild(allBtn);
 
             let index = 0;
-            // Add button for each building
             Object.keys(classrooms).forEach((building) => {
                 const btn = document.createElement('button');
                 btn.className = 'block-btn';
@@ -836,7 +955,6 @@
                 blockSelector.insertBefore(btn, allBtn);
             });
 
-            // Set initial block and load classrooms
             if (Object.keys(classrooms).length > 0) {
                 currentBlock = Object.keys(classrooms)[0];
                 loadClassrooms(currentBlock);
@@ -850,10 +968,12 @@
         const confirmDates = document.getElementById('confirmDates');
         const prevMonth = document.getElementById('prevMonth');
         const nextMonth = document.getElementById('nextMonth');
+        const sessionSelector = document.getElementById('sessionSelector');
+        const selectedDateDisplay = document.getElementById('selectedDateDisplay');
 
         if (datePickerBtn) {
             datePickerBtn.addEventListener('click', function() {
-                tempSelectedDates = [...selectedDates];
+                tempSelectedDatesWithSessions = JSON.parse(JSON.stringify(selectedDatesWithSessions));
                 datePickerModal.style.display = 'block';
                 renderCalendar();
             });
@@ -862,21 +982,26 @@
         if (closeDatePicker) {
             closeDatePicker.onclick = function() {
                 datePickerModal.style.display = 'none';
+                sessionSelector.style.display = 'none';
+                activeDate = null;
             };
         }
 
         if (cancelDatePicker) {
             cancelDatePicker.onclick = function() {
                 datePickerModal.style.display = 'none';
+                sessionSelector.style.display = 'none';
+                activeDate = null;
             };
         }
 
         if (confirmDates) {
             confirmDates.onclick = function() {
-                selectedDates = [...tempSelectedDates];
-                selectedDates.sort();
+                selectedDatesWithSessions = JSON.parse(JSON.stringify(tempSelectedDatesWithSessions));
                 updateSelectedDates();
                 datePickerModal.style.display = 'none';
+                sessionSelector.style.display = 'none';
+                activeDate = null;
             };
         }
 
@@ -902,6 +1027,59 @@
             });
         }
 
+        // Session button handlers
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('session-btn')) {
+                const session = e.target.dataset.session;
+                if (!activeDate) return;
+
+                if (!tempSelectedDatesWithSessions[activeDate]) {
+                    tempSelectedDatesWithSessions[activeDate] = {};
+                }
+
+                const sessionData = tempSelectedDatesWithSessions[activeDate];
+                const capacityInput = document.getElementById(`capacity-${session.toLowerCase()}`);
+                const sessionItem = document.getElementById(`session-${session.toLowerCase()}-item`);
+
+                if (sessionData[session]) {
+                    delete sessionData[session];
+                    e.target.classList.remove('active');
+                    sessionItem.classList.remove('active');
+                    capacityInput.disabled = true;
+                    capacityInput.value = '';
+                    if (Object.keys(sessionData).length === 0) {
+                        delete tempSelectedDatesWithSessions[activeDate];
+                    }
+                } else {
+                    const capacity = capacityInput.value ? parseInt(capacityInput.value) : null;
+                    sessionData[session] = { capacity: capacity };
+                    e.target.classList.add('active');
+                    sessionItem.classList.add('active');
+                    capacityInput.disabled = false;
+                    capacityInput.focus();
+                }
+
+                renderCalendar();
+                updatePreviewDates();
+            }
+        });
+
+        // Capacity input handlers
+        document.addEventListener('input', function(e) {
+            if (e.target.id === 'capacity-fn' || e.target.id === 'capacity-an') {
+                if (!activeDate) return;
+                
+                const session = e.target.id === 'capacity-fn' ? 'FN' : 'AN';
+                const capacity = e.target.value ? parseInt(e.target.value) : null;
+                
+                if (tempSelectedDatesWithSessions[activeDate] && 
+                    tempSelectedDatesWithSessions[activeDate][session]) {
+                    tempSelectedDatesWithSessions[activeDate][session].capacity = capacity;
+                    updatePreviewDates();
+                }
+            }
+        });
+
         function renderCalendar() {
             const monthYear = document.getElementById('monthYear');
             const calendarDays = document.getElementById('calendarDays');
@@ -925,7 +1103,7 @@
                 const day = daysInPrevMonth - i;
                 const dayDiv = document.createElement('div');
                 dayDiv.className = 'calendar-day other-month';
-                dayDiv.textContent = day;
+                dayDiv.innerHTML = `<span class="day-number">${day}</span>`;
                 calendarDays.appendChild(dayDiv);
             }
             
@@ -933,47 +1111,78 @@
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayDiv = document.createElement('div');
                 dayDiv.className = 'calendar-day';
-                dayDiv.textContent = day;
                 
                 const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const dateObj = new Date(currentYear, currentMonth, day);
                 dateObj.setHours(0, 0, 0, 0);
                 
-                // Check if it's today
                 if (dateObj.getTime() === today.getTime()) {
                     dayDiv.classList.add('today');
                 }
                 
-                // Check if date is in the past
+                const dayContent = `<span class="day-number">${day}</span>`;
+                let sessionContent = '';
+                
                 if (dateObj < today) {
                     dayDiv.classList.add('past');
+                    dayDiv.innerHTML = dayContent;
                 } else {
-                    if (tempSelectedDates.includes(dateStr)) {
+                    if (tempSelectedDatesWithSessions[dateStr]) {
                         dayDiv.classList.add('selected');
+                        const sessionData = tempSelectedDatesWithSessions[dateStr];
+                        const sessions = Object.keys(sessionData);
+                        sessionContent = `<div class="day-sessions">` +
+                            sessions.map(s => `<span class="day-session-indicator">${s}</span>`).join('') +
+                            `</div>`;
                     }
                     
+                    dayDiv.innerHTML = dayContent + sessionContent;
+                    
                     dayDiv.onclick = function() {
-                        if (tempSelectedDates.includes(dateStr)) {
-                            tempSelectedDates = tempSelectedDates.filter(d => d !== dateStr);
-                            this.classList.remove('selected');
-                        } else {
-                            tempSelectedDates.push(dateStr);
-                            this.classList.add('selected');
-                        }
-                        updatePreviewDates();
+                        activeDate = dateStr;
+                        selectedDateDisplay.textContent = new Date(dateStr).toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                        
+                        sessionSelector.style.display = 'block';
+                        
+                        // Update session button states and capacity values
+                        document.querySelectorAll('.session-btn').forEach(btn => {
+                            const session = btn.dataset.session;
+                            const capacityInput = document.getElementById(`capacity-${session.toLowerCase()}`);
+                            const sessionItem = document.getElementById(`session-${session.toLowerCase()}-item`);
+                            
+                            if (tempSelectedDatesWithSessions[dateStr] && 
+                                tempSelectedDatesWithSessions[dateStr][session]) {
+                                btn.classList.add('active');
+                                sessionItem.classList.add('active');
+                                capacityInput.disabled = false;
+                                capacityInput.value = tempSelectedDatesWithSessions[dateStr][session].capacity || '';
+                            } else {
+                                btn.classList.remove('active');
+                                sessionItem.classList.remove('active');
+                                capacityInput.disabled = true;
+                                capacityInput.value = '';
+                            }
+                        });
+
+                        sessionSelector.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                     };
                 }
                 
                 calendarDays.appendChild(dayDiv);
             }
             
-            // Next month days to complete the grid
+            // Next month days
             const totalCells = calendarDays.children.length;
             const remainingCells = Math.ceil(totalCells / 7) * 7 - totalCells;
             for (let i = 1; i <= remainingCells; i++) {
                 const dayDiv = document.createElement('div');
                 dayDiv.className = 'calendar-day other-month';
-                dayDiv.textContent = i;
+                dayDiv.innerHTML = `<span class="day-number">${i}</span>`;
                 calendarDays.appendChild(dayDiv);
             }
             
@@ -982,36 +1191,59 @@
 
         function updatePreviewDates() {
             const container = document.getElementById('previewDates');
-            if (tempSelectedDates.length === 0) {
+            const dates = Object.keys(tempSelectedDatesWithSessions).sort();
+            
+            if (dates.length === 0) {
                 container.innerHTML = '<small style="color: #666;">No dates selected</small>';
             } else {
-                const sortedDates = [...tempSelectedDates].sort();
-                container.innerHTML = sortedDates.map(date => {
+                container.innerHTML = dates.map(date => {
                     const formatted = new Date(date).toLocaleDateString('en-US', {
                         weekday: 'short',
-                        year: 'numeric',
                         month: 'short',
-                        day: 'numeric'
+                        day: 'numeric',
+                        year: 'numeric'
                     });
-                    return `<span class="selected-item" style="margin: 0.25rem;">${formatted}</span>`;
+                    const sessionData = tempSelectedDatesWithSessions[date];
+                    const sessions = Object.keys(sessionData);
+                    return `<div class="preview-date-item">
+                        <span>${formatted}</span>
+                        <div class="preview-date-sessions">
+                            ${sessions.map(s => {
+                                const capacity = sessionData[s].capacity;
+                                const capacityText = capacity ? ` (${capacity})` : '';
+                                return `<span class="preview-session-badge">${s}${capacityText}</span>`;
+                            }).join('')}
+                        </div>
+                    </div>`;
                 }).join('');
             }
         }
 
         function updateSelectedDates() {
             const container = document.getElementById('selectedDates');
-            if (selectedDates.length === 0) {
+            const dates = Object.keys(selectedDatesWithSessions).sort();
+            
+            if (dates.length === 0) {
                 container.innerHTML = '<small style="color: #666;">No dates selected</small>';
             } else {
-                container.innerHTML = selectedDates.map(date => {
+                container.innerHTML = dates.map(date => {
                     const formatted = new Date(date).toLocaleDateString('en-US', {
                         weekday: 'short',
-                        year: 'numeric',
                         month: 'short',
-                        day: 'numeric'
+                        day: 'numeric',
+                        year: 'numeric'
                     });
+                    const sessionData = selectedDatesWithSessions[date];
+                    const sessions = Object.keys(sessionData);
                     return `<div class="date-chip">
                         <span>${formatted}</span>
+                        <div class="session-badges">
+                            ${sessions.map(s => {
+                                const capacity = sessionData[s].capacity;
+                                const capacityText = capacity ? ` (${capacity})` : '';
+                                return `<span class="session-badge">${s}${capacityText}</span>`;
+                            }).join('')}
+                        </div>
                         <span class="remove-date" onclick="removeDate('${date}')">&times;</span>
                     </div>`;
                 }).join('');
@@ -1019,7 +1251,7 @@
         }
 
         function removeDate(date) {
-            selectedDates = selectedDates.filter(d => d !== date);
+            delete selectedDatesWithSessions[date];
             updateSelectedDates();
         }
 
@@ -1030,7 +1262,6 @@
                 tempSelectedClassrooms = [...selectedClassrooms];
                 classroomModal.style.display = 'block';
                 
-                // Reload current block's classrooms if data is loaded
                 if (currentBlock && classrooms[currentBlock]) {
                     loadClassrooms(currentBlock);
                 }
@@ -1085,6 +1316,8 @@
             }
             if (event.target === datePickerModal) {
                 datePickerModal.style.display = 'none';
+                sessionSelector.style.display = 'none';
+                activeDate = null;
             }
         };
 
@@ -1230,27 +1463,48 @@
         // Form submission
         const examForm = document.getElementById('examForm');
         if (examForm) {
-            examForm.onsubmit = function(e) {
+            examForm.onsubmit = async function(e) {
                 e.preventDefault();
                 
-                if (selectedDates.length === 0) {
-                    alert('Please select at least one exam date!');
+                if (Object.keys(selectedDatesWithSessions).length === 0) {
+                    alert('Please select at least one exam date with sessions!');
                     return;
                 }
 
                 const formData = {
                     examName: document.getElementById('examName').value,
-                    examDates: selectedDates,
+                    examDatesWithSessions: selectedDatesWithSessions,
                     selectedClassrooms: selectedClassrooms,
                     unavailableTeachers: unavailableTeachers
                 };
                 
                 console.log('Exam Data:', formData);
-                alert('Exam created successfully!');
-            };
-        }
+                try {
+            const response = await fetch('/coe/createExam', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
 
-        // Initialize with some sample teachers (removed - now loaded from database)
+            const result = await response.json();
+
+            if (response.ok) {
+                alert('Exam created successfully!');
+                console.log('Server Response:', result);
+            } else {
+                alert(`Error: ${result.message || 'Failed to create exam.'}`);
+            }
+        } catch (error) {
+            console.error('Fetch error:', error);
+            alert('An error occurred while creating the exam.');
+        }
+    };
+}
+
+        // Initialize calendar on load
+        renderCalendar();
     </script>
 </body>
 </html>
