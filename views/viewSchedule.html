@@ -248,8 +248,8 @@ function hideLogout() {
 }
 
 function confirmLogout() {
-    localStorage.clear();
-    window.location.href = 'http://localhost:3000/login.html';
+  fetch('/login/logout', { credentials: 'include' });
+  window.location.href = 'http://localhost:3000';
 }
 function viewExamDetails(scheduleId) {
     // Redirect to exam allocation page with scheduleId in query params
