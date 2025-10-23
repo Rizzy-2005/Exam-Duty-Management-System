@@ -20,6 +20,7 @@ app.use(express.json());
 const allowedOrigins = ['http://localhost:3000', 'http://localhost:5000'];
 
 app.use(cors({
+<<<<<<< HEAD
   origin: function (origin, callback) {
     // Allow requests with no origin (like Postman, mobile apps, or same-origin)
     if (!origin) return callback(null, true);
@@ -34,6 +35,10 @@ app.use(cors({
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
+=======
+  origin: "http://localhost:3000", //React frontend URL
+  credentials: true
+>>>>>>> 1fd14b3c18ba8d22f5250c88ce250a938510dd96
 }));
 
 //Initializing the session
@@ -61,9 +66,14 @@ app.use('/requests', reqRoutes);
 //Serving view files
 app.use(express.static(path.join(__dirname, "./views")));
 
+<<<<<<< HEAD
 //HTML page routes frrom react
 app.get('/coeHome', checkSession, (req, res) => {
   res.sendFile(path.join(__dirname, "./views/coeHome.html"));
+=======
+app.get('/coeHome', checkSession, (req,res) => {
+  res.redirect("/coeHome copy.html");
+>>>>>>> 1fd14b3c18ba8d22f5250c88ce250a938510dd96
 });
 
 app.get('/teacherHome', checkSession, (req, res) => {
