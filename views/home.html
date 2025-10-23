@@ -12,8 +12,8 @@
         <header class="header fade-in">
             <h1>Exam Scheduling Portal</h1>
             <div class="user-info">
-                <span id="name">Welcome, Prof. Johnson</span>
-                <div class="user-avatar" id="avatar">PJ</div>
+                <span id="name"></span>
+                <div class="user-avatar" id="avatar"></div>
             </div>
         </header>
 
@@ -112,6 +112,38 @@ document.getElementById('avatar').addEventListener('click', function() {
 
 function hideLogout() {
     document.getElementById('logoutModal').classList.remove('show');
+}
+
+async function loadUserInfo() {
+    try {
+        const response = await fetch('http://localhost:5000/teacher/getUserInfo', {
+            method: 'GET',
+            credentials: 'include' // Important! Sends session cookie
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            const name = result.name;
+            
+            // Update the name display
+            document.getElementById('name').textContent = `Welcome, ${name}`;
+            
+            // Update avatar initials
+            const initials = name.split(' ')
+                .map(word => word.charAt(0))
+                .join('')
+                .toUpperCase();
+            
+            document.getElementById('avatar').textContent = initials;
+        } else {
+            // Redirect to login if not authenticated
+            window.location.href = '/login.html';
+        }
+    } catch (error) {
+        console.error('Error loading user info:', error);
+        window.location.href = '/login.html';
+    }
 }
 
 function confirmLogout() {
