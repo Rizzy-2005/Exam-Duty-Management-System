@@ -258,6 +258,11 @@ function isCurrentTeacher(allocation) {
   return currentTeacherId && allocTeacherId === currentTeacherId;
 }
 
+function isClickedAllocation(allocation) {
+  const scheduleId = getScheduleIdFromURL();
+  return allocation.id === scheduleId;
+}
+
 function populateAllocations(allocations, filterDate = null) {
   const myGrid = document.getElementById("myAllocationGrid");
   const othersGrid = document.getElementById("detailsGrid");
@@ -281,21 +286,21 @@ function populateAllocations(allocations, filterDate = null) {
     return;
   }
 
-  // Separate current teacher's allocation from others
-  const myAllocations = filtered.filter(item => isCurrentTeacher(item));
-  const otherAllocations = filtered.filter(item => !isCurrentTeacher(item));
+  // ⚠️ CHANGED: Separate the clicked allocation from others
+  const myAllocations = filtered.filter(item => isClickedAllocation(item));
+  const otherAllocations = filtered.filter(item => !isClickedAllocation(item));
 
-  console.log('My allocations:', myAllocations.length);
+  console.log('My clicked allocation:', myAllocations.length);
   console.log('Other allocations:', otherAllocations.length);
 
-  // Display current teacher's allocation at the top
+  // Display the clicked allocation at the top (highlighted)
   if (myAllocations.length > 0) {
     myContainer.style.display = "block";
     myAllocations.forEach(item => {
       const div = document.createElement("div");
       div.classList.add("detail-item", "my-allocation");
       div.innerHTML = `
-        <h3>${item.teacher} (You)</h3>
+        <h3>${item.teacher}</h3>
         <p><strong>Date:</strong> ${item.dateDay} ${item.dateMonth} ${item.dateYear}</p>
         <p><strong>Room:</strong> ${item.classroom.number}</p>
         <p><strong>Block:</strong> ${item.classroom.building}</p>
@@ -307,20 +312,35 @@ function populateAllocations(allocations, filterDate = null) {
     myContainer.style.display = "none";
   }
 
-  // Display other teachers' allocations
+  // Display all other allocations (including your other duties)
   if (otherAllocations.length > 0) {
     othersTitle.style.display = "block";
     otherAllocations.forEach(item => {
       const div = document.createElement("div");
       div.classList.add("detail-item");
+      
+      // Check if this is also your allocation (but not the clicked one)
+      const isMyOtherDuty = currentTeacherId && 
+        (item.teacherId._id === currentTeacherId || 
+         item.teacherId.id === currentTeacherId || 
+         item.teacherId === currentTeacherId);
+      
       div.innerHTML = `
-        <h3>${item.teacher}</h3>
+        <h3>${item.teacher}${isMyOtherDuty ? ' (You)' : ''}</h3>
         <p><strong>Date:</strong> ${item.dateDay} ${item.dateMonth} ${item.dateYear}</p>
         <p><strong>Room:</strong> ${item.classroom.number}</p>
         <p><strong>Block:</strong> ${item.classroom.building}</p>
         <p><strong>Session:</strong> ${item.session}</p>
       `;
-      div.onclick = () => openModal(item);
+      
+      // Only allow swapping with other teachers, not your own duties
+      if (!isMyOtherDuty) {
+        div.onclick = () => openModal(item);
+      } else {
+        div.style.opacity = '0.7';
+        div.style.cursor = 'not-allowed';
+      }
+      
       othersGrid.appendChild(div);
     });
   } else {
