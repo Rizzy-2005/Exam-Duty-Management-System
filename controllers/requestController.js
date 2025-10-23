@@ -3,10 +3,10 @@ const allocationModel = require('../models/allocationModel')
 const classroomModel = require('../models/classroomModel')
 exports.sendRequest = async (req, res) => {
   try {
-    const { scheduleId, toTeacherId, message, examId } = req.body;
+    const { fromAllocationId, toAllocationId, toTeacherId, message, examId } = req.body;
     const fromTeacherId = req.session.user.id;
 
-    if (!fromTeacherId || !toTeacherId || !examId || !scheduleId) {
+    if (!fromTeacherId || !toTeacherId || !examId || !fromAllocationId || !toAllocationId) {
       return res.status(400).json({ success: false, message: 'Missing required fields' });
     }
 
@@ -14,12 +14,13 @@ exports.sendRequest = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Cannot send request to yourself' });
     }
 
-    //Prevent sending duplicate requests for same exam
+    // Prevent sending duplicate requests
     const existing = await requests.findOne({
       fromTeacherId,
       toTeacherId,
       examId,
-      allocationId: scheduleId,
+      fromAllocationId,
+      toAllocationId,
       status: 'Pending',
     });
 
@@ -29,7 +30,8 @@ exports.sendRequest = async (req, res) => {
 
     const newRequest = new requests({
       examId,
-      allocationId: scheduleId,
+      fromAllocationId,
+      toAllocationId,
       fromTeacherId,
       toTeacherId,
       reason: message,
@@ -46,15 +48,22 @@ exports.sendRequest = async (req, res) => {
 
 exports.receiveRequest = async (req, res) => {
   try {
-    const teacherId = req.session.user.id; // Get from session
+    const teacherId = req.session.user.id;
     
     const msgs = await requests
-      .find({ toTeacherId: teacherId, status: 'Pending' }) // Match your enum
+      .find({ toTeacherId: teacherId, status: 'Pending' })
       .populate('fromTeacherId', 'name email department')
       .populate('toTeacherId', 'name email')
       .populate('examId', 'title date')
       .populate({
-        path: 'allocationId',
+        path: 'fromAllocationId',
+        populate: [
+          { path: 'classroomId', select: 'name building' },
+          { path: 'examId', select: 'title date' }
+        ]
+      })
+      .populate({
+        path: 'toAllocationId',
         populate: [
           { path: 'classroomId', select: 'name building' },
           { path: 'examId', select: 'title date' }
@@ -63,47 +72,37 @@ exports.receiveRequest = async (req, res) => {
       .sort({ createdAt: -1 });
 
     // Transform data to match frontend format
-    const transformed = await Promise.all(msgs.map(async msg => {
-      // Get the requester's schedule (fromTeacherId's allocation)
-      const requesterAllocation = await allocationModel
-        .findOne({ 
-          teacherId: msg.fromTeacherId._id,
-          examId: msg.examId._id,
-          date: msg.allocationId.date,
-          session: msg.allocationId.session
-        })
-        .populate('classroomId', 'name building');
-
+    const transformed = msgs.map(msg => {
       return {
         id: msg._id,
         requesterName: msg.fromTeacherId.name,
         requesterDepartment: msg.fromTeacherId.department || 'N/A',
         requestedAt: msg.createdAt,
-        reason: msg.reason, // Changed from 'message' to 'reason'
+        reason: msg.reason,
         yourDuty: {
-          dateDay: new Date(msg.allocationId.date).getDate(),
-          dateMonth: new Date(msg.allocationId.date).toLocaleString('en-US', { month: 'short' }),
-          session: msg.allocationId.session === 'FN' ? 'Morning' : 'Afternoon',
+          dateDay: new Date(msg.toAllocationId.date).getDate(),
+          dateMonth: new Date(msg.toAllocationId.date).toLocaleString('en-US', { month: 'short' }),
+          session: msg.toAllocationId.session === 'FN' ? 'Morning' : 'Afternoon',
           classroom: {
-            number: msg.allocationId.classroomId.name,
-            building: msg.allocationId.classroomId.building
+            number: msg.toAllocationId.classroomId.name,
+            building: msg.toAllocationId.classroomId.building
           }
         },
-        theirDuty: requesterAllocation ? {
-          dateDay: new Date(requesterAllocation.date).getDate(),
-          dateMonth: new Date(requesterAllocation.date).toLocaleString('en-US', { month: 'short' }),
-          session: requesterAllocation.session === 'FN' ? 'Morning' : 'Afternoon',
+        theirDuty: {
+          dateDay: new Date(msg.fromAllocationId.date).getDate(),
+          dateMonth: new Date(msg.fromAllocationId.date).toLocaleString('en-US', { month: 'short' }),
+          session: msg.fromAllocationId.session === 'FN' ? 'Morning' : 'Afternoon',
           classroom: {
-            number: requesterAllocation.classroomId.name,
-            building: requesterAllocation.classroomId.building
+            number: msg.fromAllocationId.classroomId.name,
+            building: msg.fromAllocationId.classroomId.building
           }
-        } : null
+        }
       };
-    }));
+    });
 
     res.status(200).json({ 
       success: true, 
-      data: transformed.filter(t => t.theirDuty !== null) // Remove if requester allocation not found
+      data: transformed
     });
   } catch (error) {
     console.error('Error fetching requests:', error);
