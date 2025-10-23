@@ -17,6 +17,11 @@ console.log('[ROUTE HIT] /allocations/:id → ID:', req.params.id);
 router.get('/getAllocations/:examId', coeController.getAllocations);
 router.get('/getExam/:id', coeController.getExamById);
 router.put('/updateAllocation/:id', coeController.updateAllocation);
+router.get("/teachers", coeController.getAllTeachers);
+router.delete("/teachers/:id", coeController.deleteTeacher);
+router.get("/classrooms", coeController.getAllClassrooms);
+router.post("/addClassroom", coeController.addClassroom);
+router.put("/updateClassroom/:id", coeController.updateClassroom);
 
 
 
