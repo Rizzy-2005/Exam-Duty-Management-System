@@ -5,137 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Exam Allocations</title>
 <link rel="stylesheet" href="viewSchedule.css" />
-<style>
-  .details-grid {
-    display: grid;
-    gap: 15px;
-    margin-top: 20px;
-  }
-  .detail-item {
-    background: #fff;
-    border-radius: 10px;
-    padding: 15px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    transition: 0.3s;
-    cursor: pointer;
-  }
-  .detail-item:hover {
-    transform: scale(1.02);
-  }
-
-  /* Current User Allocation Style */
-  .my-allocation {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: 3px solid #5a67d8;
-    cursor: default;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .my-allocation:hover {
-    transform: none;
-  }
-  .my-allocation h3,
-  .my-allocation p {
-    color: white;
-  }
-
-  .section-title {
-    margin-top: 30px;
-    margin-bottom: 15px;
-    font-size: 1.2rem;
-    color: #333;
-    border-bottom: 2px solid #667eea;
-    padding-bottom: 8px;
-  }
-
-  /* Swap Modal Styles */
-  .swap-modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 100vw;
-    height: 100vh;
-    margin: 0;
-    padding: 0;
-    background: rgba(0,0,0,0.6);
-  }
-
-  .swap-modal.show {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .swap-modal .modal-content {
-    background: #fff;
-    padding: 20px;
-    border-radius: 12px;
-    max-width: 400px;
-    width: 90%;
-    text-align: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    animation: fadeIn 0.3s ease-in-out;
-  }
-  .swap-modal .modal-content h3 {
-    margin-bottom: 15px;
-  }
-  .swap-modal .modal-content textarea {
-    width: 100%;
-    min-height: 80px;
-    margin-bottom: 15px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    resize: none;
-  }
-  .modal-buttons {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-  }
-  .btn {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    cursor: pointer;
-  }
-  .btn-swap {
-    background: #4caf50;
-    color: white;
-  }
-  .btn-cancel {
-    background: #e74c3c;
-    color: white;
-  }
-  .request-sent-label {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: #4caf50;
-  color: white;
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: bold;
-}
-.detail-item.request-sent {
-  opacity: 0.8;
-  pointer-events: none;
-}
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
-  }
-</style>
 </head>
 <body>
 <div class="container">
@@ -151,24 +20,35 @@
     </div>
   </header>
 
-  <!-- Add date filter above allocations -->
-  <div class="filter-bar fade-in" style="margin: 20px 0; text-align: center;">
-    <label for="dateFilter"><strong>Filter by Date:</strong></label>
-    <input type="date" id="dateFilter" style="padding: 6px; border-radius: 6px; border: 1px solid #ccc;" />
-  </div>
-
-  <!-- Exam Details -->
-  <div class="details-container fade-in">
-   
-    
-    <!-- Current User's Allocation -->
-    <div id="myAllocationContainer" style="display: none;">
-      <div class="details-grid" id="myAllocationGrid"></div>
+  <!-- Schedule Container -->
+  <div class="schedule-container fade-in">
+    <div class="schedule-header">
+      <h2>Teacher Allocations</h2>
+      <span class="schedule-count" id="allocationCount">Loading...</span>
     </div>
 
-    <!-- Other Teachers' Allocations -->
-    <h3 class="section-title" id="othersTitle" style="display: none;">Allocations for the selected exam</h3>
-    <div class="details-grid" id="detailsGrid"></div>
+    <!-- Filter Buttons -->
+    <div class="filter-buttons">
+      <button class="filter-btn active" onclick="filterAllocations('all')">All Teachers</button>
+      <button class="filter-btn" onclick="filterAllocations('morning')">Morning</button>
+      <button class="filter-btn" onclick="filterAllocations('afternoon')">Afternoon</button>
+      <input type="date" id="dateFilter" style="padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border-color);" />
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="empty-state">
+      <p>Loading allocations...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="empty-state" style="display: none;">
+      <p>No allocations found for this date.</p>
+    </div>
+
+    <!-- Schedule Grid -->
+    <div class="schedule-grid" id="scheduleGrid" style="display: none;">
+      <!-- Allocations will be populated here -->
+    </div>
   </div>
 
   <!-- Actions -->
@@ -178,13 +58,13 @@
 </div>
 
 <!-- Swap Modal -->
-<div class="swap-modal" id="swapModal">
-  <div class="modal-content">
+<div class="modal-overlay" id="swapModal">
+  <div class="modal">
     <h3 id="modalTeacherName">Request Swap</h3>
-    <textarea id="swapMessage" placeholder="Optional message..."></textarea>
+    <textarea id="swapMessage" placeholder="Optional message..." style="width: 100%; min-height: 80px; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 15px;"></textarea>
     <div class="modal-buttons">
-      <button class="btn btn-swap" onclick="sendSwapRequest()">Swap Request</button>
-      <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-btn btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-btn btn-confirm" onclick="sendSwapRequest()">Send Request</button>
     </div>
   </div>
 </div>
@@ -194,7 +74,7 @@ let selectedAllocation = null;
 let selectedTeacher = null;
 let allAllocations = [];
 let currentTeacherId = null;
-let sentRequests = []; // keep track of teachers who got a swap request
+let currentFilter = 'all';
 
 function getScheduleIdFromURL() {
   const params = new URLSearchParams(window.location.search);
@@ -203,11 +83,13 @@ function getScheduleIdFromURL() {
 
 async function loadAllocations() {
   const scheduleId = getScheduleIdFromURL();
-  const detailsGrid = document.getElementById("detailsGrid");
-  const examDateTitle = document.getElementById("examDateTitle");
+  const loadingState = document.getElementById('loadingState');
+  const emptyState = document.getElementById('emptyState');
+  const scheduleGrid = document.getElementById('scheduleGrid');
 
   if (!scheduleId) {
-    examDateTitle.textContent = 'No schedule or teacher selected';
+    loadingState.style.display = 'none';
+    emptyState.style.display = 'block';
     return;
   }
 
@@ -222,8 +104,8 @@ async function loadAllocations() {
     const result = await response.json();
 
     if (result.success && result.data.length > 0) {
-      // Add date components for display
-      loadUserInfo(result.name)
+      loadUserInfo(result.name);
+      
       allAllocations = result.data.map(item => {
         const dateObj = new Date(item.date);
         return {
@@ -234,28 +116,24 @@ async function loadAllocations() {
         };
       });
 
-      // Find the current teacher's ID from the clicked schedule
       const myAllocation = allAllocations.find(a => a.id === scheduleId);
       if (myAllocation) {
         currentTeacherId = myAllocation.teacherId._id || myAllocation.teacherId.id || myAllocation.teacherId;
-        console.log('Current Teacher ID:', currentTeacherId);
       }
 
-      populateAllocations(allAllocations);
-      examDateTitle.textContent = "Allocations for the selected exam";
+      loadingState.style.display = 'none';
+      scheduleGrid.style.display = 'grid';
+      renderAllocations(allAllocations);
+      updateAllocationCount(allAllocations.length);
     } else {
-      examDateTitle.textContent = "No allocations found";
-      detailsGrid.innerHTML = '';
+      loadingState.style.display = 'none';
+      emptyState.style.display = 'block';
     }
   } catch (err) {
     console.error(err);
-    examDateTitle.textContent = "Error loading allocations";
+    loadingState.style.display = 'none';
+    emptyState.style.display = 'block';
   }
-}
-
-function isCurrentTeacher(allocation) {
-  const allocTeacherId = allocation.teacherId._id || allocation.teacherId.id || allocation.teacherId;
-  return currentTeacherId && allocTeacherId === currentTeacherId;
 }
 
 function isClickedAllocation(allocation) {
@@ -263,94 +141,111 @@ function isClickedAllocation(allocation) {
   return allocation.id === scheduleId;
 }
 
-function populateAllocations(allocations, filterDate = null) {
-  const myGrid = document.getElementById("myAllocationGrid");
-  const othersGrid = document.getElementById("detailsGrid");
-  const myContainer = document.getElementById("myAllocationContainer");
-  const othersTitle = document.getElementById("othersTitle");
+function isMyOtherDuty(allocation) {
+  const allocTeacherId = allocation.teacherId._id || allocation.teacherId.id || allocation.teacherId;
+  return currentTeacherId && allocTeacherId === currentTeacherId && !isClickedAllocation(allocation);
+}
+
+function renderAllocations(allocations) {
+  const scheduleGrid = document.getElementById('scheduleGrid');
+  scheduleGrid.innerHTML = '';
+
+  // Separate clicked allocation and others (excluding our other duties)
+  const myClickedAllocation = allocations.filter(a => isClickedAllocation(a));
+  const otherAllocations = allocations.filter(a => !isClickedAllocation(a) && !isMyOtherDuty(a));
+
+  let index = 0;
+
+  // Render clicked allocation first with blue background
+  myClickedAllocation.forEach((allocation) => {
+    const scheduleItem = document.createElement('div');
+    scheduleItem.className = 'schedule-item stagger-in';
+    scheduleItem.style.animationDelay = `${index * 0.1}s`;
+    scheduleItem.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+    scheduleItem.style.color = 'white';
+    scheduleItem.style.border = '2px solid #5a67d8';
+
+    scheduleItem.innerHTML = `
+      
+      <div class="date-info" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);">
+        <div class="date-day" style="color: white;">${allocation.dateDay}</div>
+        <div class="date-month" style="color: white;">${allocation.dateMonth}</div>
+      </div>
+      <div class="exam-details">
+        <div class="exam-subject" style="color: white;">${allocation.teacher}</div>
+        <div class="exam-code" style="color: rgba(255,255,255,0.9);">Room: ${allocation.classroom.number} • ${allocation.classroom.building}</div>
+      </div>
+      <div class="session-badge session-${allocation.session.toLowerCase()}">${allocation.session}</div>
+      <div class="schedule-arrow" style="color: white;">→</div>
+    `;
+
+    scheduleItem.style.cursor = 'default';
+    scheduleGrid.appendChild(scheduleItem);
+    index++;
+  });
+
+  // Add separator if both sections exist
+  if (myClickedAllocation.length > 0 && otherAllocations.length > 0) {
+    const separator = document.createElement('div');
+    separator.style.gridColumn = '1 / -1';
+    separator.style.margin = '1rem 0';
+    separator.style.padding = '0.5rem 0';
+    separator.style.borderBottom = '2px solid var(--border-color)';
+    separator.innerHTML = '<h3 style="font-size: 1.1rem; color: var(--text-secondary);">Other Teachers</h3>';
+    scheduleGrid.appendChild(separator);
+  }
+
+  // Render other allocations
+  otherAllocations.forEach((allocation) => {
+    const scheduleItem = document.createElement('div');
+    scheduleItem.className = 'schedule-item stagger-in';
+    scheduleItem.style.animationDelay = `${index * 0.1}s`;
+
+    scheduleItem.innerHTML = `
+      <div class="date-info">
+        <div class="date-day">${allocation.dateDay}</div>
+        <div class="date-month">${allocation.dateMonth}</div>
+      </div>
+      <div class="exam-details">
+        <div class="exam-subject">${allocation.teacher}</div>
+        <div class="exam-code">Room: ${allocation.classroom.number} • ${allocation.classroom.building}</div>
+      </div>
+      <div class="session-badge session-${allocation.session.toLowerCase()}">${allocation.session}</div>
+      <div class="schedule-arrow">→</div>
+    `;
+
+    scheduleItem.style.cursor = 'pointer';
+    scheduleItem.onclick = () => openModal(allocation);
+    scheduleGrid.appendChild(scheduleItem);
+    index++;
+  });
+}
+
+function filterAllocations(type) {
+  const buttons = document.querySelectorAll('.filter-btn');
+  buttons.forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
   
-  myGrid.innerHTML = "";
-  othersGrid.innerHTML = "";
-
-  let filtered = allocations;
-
-  // Apply date filter if selected
-  if (filterDate) {
-    filtered = allocations.filter(item => item.date.split('T')[0] === filterDate);
+  currentFilter = type;
+  let filteredAllocations = allAllocations;
+  
+  switch(type) {
+    case 'morning':
+      filteredAllocations = allAllocations.filter(a => a.session === 'Morning');
+      break;
+    case 'afternoon':
+      filteredAllocations = allAllocations.filter(a => a.session === 'Afternoon');
+      break;
+    default:
+      filteredAllocations = allAllocations;
   }
 
-  if (filtered.length === 0) {
-    othersGrid.innerHTML = `<p style="text-align:center; color:#888;">No allocations found for this date</p>`;
-    myContainer.style.display = "none";
-    othersTitle.style.display = "none";
-    return;
-  }
+  renderAllocations(filteredAllocations);
+  updateAllocationCount(filteredAllocations.length);
+}
 
-  // ⚠️ CHANGED: Separate the clicked allocation from others
-  const myAllocations = filtered.filter(item => isClickedAllocation(item));
-  const otherAllocations = filtered.filter(item => !isClickedAllocation(item));
-
-  console.log('My clicked allocation:', myAllocations.length);
-  console.log('Other allocations:', otherAllocations.length);
-
-  // Display the clicked allocation at the top (highlighted)
-  if (myAllocations.length > 0) {
-    myContainer.style.display = "block";
-    myAllocations.forEach(item => {
-      const div = document.createElement("div");
-      div.classList.add("detail-item", "my-allocation");
-      div.innerHTML = `
-        <h3>${item.teacher}</h3>
-        <p><strong>Date:</strong> ${item.dateDay} ${item.dateMonth} ${item.dateYear}</p>
-        <p><strong>Room:</strong> ${item.classroom.number}</p>
-        <p><strong>Block:</strong> ${item.classroom.building}</p>
-        <p><strong>Session:</strong> ${item.session}</p>
-      `;
-      myGrid.appendChild(div);
-    });
-  } else {
-    myContainer.style.display = "none";
-  }
-
-  // Display all other allocations (including your other duties)
-  if (otherAllocations.length > 0) {
-    othersTitle.style.display = "block";
-    otherAllocations.forEach(item => {
-      const div = document.createElement("div");
-      div.classList.add("detail-item");
-      
-      // Check if this is also your allocation (but not the clicked one)
-      const isMyOtherDuty = currentTeacherId && 
-        (item.teacherId._id === currentTeacherId || 
-         item.teacherId.id === currentTeacherId || 
-         item.teacherId === currentTeacherId);
-      
-      div.innerHTML = `
-        <h3>${item.teacher}${isMyOtherDuty ? ' (You)' : ''}</h3>
-        <p><strong>Date:</strong> ${item.dateDay} ${item.dateMonth} ${item.dateYear}</p>
-        <p><strong>Room:</strong> ${item.classroom.number}</p>
-        <p><strong>Block:</strong> ${item.classroom.building}</p>
-        <p><strong>Session:</strong> ${item.session}</p>
-      `;
-      
-      // Only allow swapping with other teachers, not your own duties
-      if (!isMyOtherDuty) {
-        div.onclick = () => openModal(item);
-      } else {
-        div.style.opacity = '0.7';
-        div.style.cursor = 'not-allowed';
-      }
-      
-      othersGrid.appendChild(div);
-    });
-  } else {
-    othersTitle.style.display = "none";
-    if (myAllocations.length === 0) {
-      othersGrid.innerHTML = `<p style="text-align:center; color:#888;">No allocations found</p>`;
-    } else {
-      othersGrid.innerHTML = `<p style="text-align:center; color:#888;">No other teachers assigned</p>`;
-    }
-  }
+function updateAllocationCount(count) {
+  document.getElementById('allocationCount').textContent = `${count} Teacher${count !== 1 ? 's' : ''}`;
 }
 
 function openModal(allocation) {
@@ -370,13 +265,6 @@ async function sendSwapRequest() {
   const scheduleId = getScheduleIdFromURL();
   const toTeacherId = selectedAllocation.teacherId._id || selectedAllocation.teacherId;
   const examId = selectedAllocation.exam.id._id || selectedAllocation.exam.id;
-  
-  console.log("Request data:", { 
-    scheduleId, 
-    toTeacherId, 
-    message, 
-    examId 
-  });
 
   if (!examId) {
     alert('Error: Exam ID not found in allocation data');
@@ -414,7 +302,6 @@ function goBack() {
   window.history.back();
 }
 
-// Load user info
 function loadUserInfo(userName) {
   const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
   document.getElementById('userName').textContent = userName;
@@ -431,12 +318,17 @@ document.getElementById('userAvatar').addEventListener('click', function() {
 
 document.getElementById("dateFilter").addEventListener("change", (e) => {
   const selectedDate = e.target.value;
-  populateAllocations(allAllocations, selectedDate);
+  if (selectedDate) {
+    const filtered = allAllocations.filter(item => item.date.split('T')[0] === selectedDate);
+    renderAllocations(filtered);
+    updateAllocationCount(filtered.length);
+  } else {
+    filterAllocations(currentFilter);
+  }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
   loadAllocations();
-  loadUserInfo();
 });
 </script>
 </body>
