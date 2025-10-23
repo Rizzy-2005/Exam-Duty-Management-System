@@ -136,6 +136,30 @@ async function loadUserInfo() {
     }
 }
 
+// Fetch pending request count for logged-in teacher
+async function updatePendingRequestCount() {
+    try {
+        const response = await fetch('http://localhost:5000/requests/pending-count', {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            const count = result.count;
+            document.getElementById('requestCount').textContent = `${count}`;
+        }
+    } catch (error) {
+        console.error('Error fetching pending request count:', error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadUserInfo();
+    updatePendingRequestCount(); // <-- fetch count
+});
+
+
 function confirmLogout() {
   fetch('/login/logout', { credentials: 'include' });
   window.location.href = 'http://localhost:3000';

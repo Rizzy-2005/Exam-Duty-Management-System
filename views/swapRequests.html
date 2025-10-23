@@ -327,6 +327,11 @@ async function executeAction() {
         console.error(`Error ${action.type}ing swap:`, error);
         showToast(`An error occurred. Please try again.`, 'error');
     }
+    
+    // Refresh home page count if user is on home
+    if (window.location.pathname.includes('home.html')) {
+        updatePendingRequestCount();
+    }
 
     pendingAction = null;
 }
