@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exam Allocation Details</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f4f6f9;
+      padding: 30px;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 1200px;
+      margin: auto;
+    }
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+    .filters {
+      display: flex;
+      gap: 15px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .filter-group label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #555;
+    }
+    select {
+      padding: 8px 12px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      min-width: 150px;
+      cursor: pointer;
+    }
+    select:focus {
+      outline: none;
+      border-color: #3498db;
+    }
+    .no-data {
+      text-align: center;
+      padding: 40px;
+      color: #888;
+      font-size: 16px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    thead {
+      background-color: #3498db;
+      color: white;
+    }
+    th {
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+    }
+    tbody tr:hover {
+      background-color: #f8f9fa;
+    }
+    .session-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 12px;
+    }
+    .session-FN {
+      background-color: #e3f2fd;
+      color: #1976d2;
+    }
+    .session-AN {
+      background-color: #fff3e0;
+      color: #f57c00;
+    }
+    .error {
+      color: #e74c3c;
+      padding: 20px;
+      text-align: center;
+      background-color: #fadbd8;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Exam Allocation Details</h1>
+    
+    <div class="filters">
+      <div class="filter-group">
+        <label for="dateFilter">Filter by Date:</label>
+        <select id="dateFilter">
+          <option value="all">All Dates</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label for="sessionFilter">Filter by Session:</label>
+        <select id="sessionFilter">
+          <option value="all">All Sessions</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="content">
+      <div class="loading">Loading allocations...</div>
+    </div>
+  </div>
+
+  <script>
+    let allAllocations = [];
+    const examId = window.location.pathname.split('/').pop();
+
+    async function loadAllocation() {
+      try {
+        console.log(`Fetching allocations for examId: ${examId}`);
+        const res = await fetch(`/coe/getAllocations/${examId}`);
+
+        if (res.status === 404) {
+          document.getElementById('content').innerHTML = 
+            '<div class="no-data">No allocations have been created for this exam yet.</div>';
+          return;
+        }
+
+        if (!res.ok) throw new Error(`Error fetching allocations: ${res.status}`);
+        
+        allAllocations = await res.json();
+        console.log("Allocations data:", allAllocations);
+        
+        // Debug: Check first allocation structure
+        if (allAllocations.length > 0) {
+          console.log("First allocation:", allAllocations[0]);
+          console.log("Classroom data:", allAllocations[0].classroomId);
+        }
+
+        if (allAllocations.length === 0) {
+          document.getElementById('content').innerHTML = 
+            '<div class="no-data">No allocations found for this exam.</div>';
+          return;
+        }
+
+        populateFilters();
+        displayAllocations();
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById('content').innerHTML =
+          `<div class="error">Failed to load allocations: ${err.message}</div>`;
+      }
+    }
+
+    function populateFilters() {
+      const dates = new Set();
+      const sessions = new Set();
+
+      allAllocations.forEach(a => {
+        dates.add(a.date);
+        sessions.add(a.session);
+      });
+
+      const dateFilter = document.getElementById('dateFilter');
+      Array.from(dates).sort().forEach(date => {
+        const option = document.createElement('option');
+        option.value = date;
+        option.textContent = new Date(date).toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        });
+        dateFilter.appendChild(option);
+      });
+
+      const sessionFilter = document.getElementById('sessionFilter');
+      Array.from(sessions).sort().forEach(session => {
+        const option = document.createElement('option');
+        option.value = session;
+        option.textContent = session;
+        sessionFilter.appendChild(option);
+      });
+
+      dateFilter.addEventListener('change', displayAllocations);
+      sessionFilter.addEventListener('change', displayAllocations);
+    }
+
+    function displayAllocations() {
+      const selectedDate = document.getElementById('dateFilter').value;
+      const selectedSession = document.getElementById('sessionFilter').value;
+
+      let filtered = allAllocations.filter(a => {
+        const dateMatch = selectedDate === 'all' || a.date === selectedDate;
+        const sessionMatch = selectedSession === 'all' || a.session === selectedSession;
+        return dateMatch && sessionMatch;
+      });
+
+      // Sort by date, then session
+      filtered.sort((a, b) => {
+        const dateCompare = new Date(a.date) - new Date(b.date);
+        if (dateCompare !== 0) return dateCompare;
+        return a.session.localeCompare(b.session);
+      });
+
+      const content = document.getElementById('content');
+
+      if (filtered.length === 0) {
+        content.innerHTML = '<div class="no-data">No allocations match the selected filters.</div>';
+        return;
+      }
+
+      let tableHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Session</th>
+              <th>Teacher</th>
+              <th>Classroom</th>
+              <th>Building</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      filtered.forEach(a => {
+        const date = new Date(a.date).toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        });
+        
+        // Handle teacher data
+        const teacherName = a.teacherId?.name || 'Not Assigned';
+        
+        // Handle classroom data - check if it's populated
+        let classroomName = 'Not Assigned';
+        let building = '—';
+        
+        if (a.classroomId) {
+          // If classroomId is populated as an object
+          if (typeof a.classroomId === 'object') {
+            classroomName = a.classroomId.name || 'Not Assigned';
+            building = a.classroomId.building || '—';
+          } else {
+            // If it's still just an ID string
+            classroomName = 'ID: ' + a.classroomId;
+          }
+        }
+
+        tableHTML += `
+          <tr>
+            <td>${date}</td>
+            <td><span class="session-badge session-${a.session}">${a.session}</span></td>
+            <td>${teacherName}</td>
+            <td>${classroomName}</td>
+            <td>${building}</td>
+          </tr>
+        `;
+      });
+
+      tableHTML += `
+          </tbody>
+        </table>
+      `;
+
+      content.innerHTML = tableHTML;
+    }
+
+    loadAllocation();
+  </script>
+</body>
+</html>

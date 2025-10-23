@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Exam Allocations - Brennan College</title>
+</head>
+
+<body>
+    <style>
+        body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f4f6f9;
+  margin: 0;
+  padding: 0;
+}
+
+/* Navbar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #113f67;
+  color: white;
+  padding: 15px 40px;
+}
+
+.nav-left {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.nav-right .nav-btn {
+  background-color: #386fa4;
+  color: white;
+  border: none;
+  margin-left: 10px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.nav-right .nav-btn:hover {
+  background-color: #28527a;
+}
+
+/* Main Container */
+.container {
+  width: 80%;
+  margin: 40px auto;
+  text-align: center;
+}
+
+h1 {
+  color: #113f67;
+  margin-bottom: 25px;
+}
+
+/* Grid Layout */
+.exam-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
+}
+
+/* Exam Cards */
+.exam-card {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 25px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.exam-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+}
+
+.exam-card h2 {
+  color: #113f67;
+  margin-bottom: 10px;
+}
+
+.exam-card p {
+  color: #333;
+  margin: 5px 0;
+}
+
+.view-btn {
+  background-color: #113f67;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-top: 10px;
+}
+
+.view-btn:hover {
+  background-color: #28527a;
+}
+.topbar {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .topbar-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .topbar-btn {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .topbar-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+    </style>
+  <div class="topbar">
+        <div style="padding-left: 75px; padding-top: 8px;padding-bottom: 8px;">
+            <span style="color: white; font-size: 1.5rem; font-weight: 600;">Brennan College</span>
+        </div>
+        <div class="topbar-buttons">
+            <button class="topbar-btn" id='home'>Home</button>
+            <button class="topbar-btn">Notification</button>
+            <button class="topbar-btn">Logout</button>
+        </div>
+    </div>
+
+  <main class="container">
+    <h1>Exam Allocations</h1>
+
+    <div id="exam-list" class="exam-grid">
+      <!-- Cards will be inserted dynamically here -->
+    </div>
+  </main>
+
+  <script>
+    // Fetch all exams from backend
+    async function loadExams() {
+  const response = await fetch('/coe/getExams');
+  const exams = await response.json();
+
+  const container = document.getElementById('exam-list');
+  container.innerHTML = '';
+
+  exams.forEach(exam => {
+    const card = document.createElement('div');
+    card.classList.add('exam-card');
+
+    // Format date
+    let formattedDates = '—';
+if (exam.dates && exam.dates.length > 0) {
+  // Sort the dates (in case they’re not already sorted)
+  const sortedDates = exam.dates.sort((a, b) => new Date(a) - new Date(b));
+
+  const start = new Date(sortedDates[0]).toLocaleDateString('en-GB', {
+    day: '2-digit', month: 'short', year: 'numeric'
+  });
+
+  const end = new Date(sortedDates[sortedDates.length - 1]).toLocaleDateString('en-GB', {
+    day: '2-digit', month: 'short', year: 'numeric'
+  });
+
+  formattedDates = start === end ? start : `${start} - ${end}`;
+}
+
+
+    // Format sessions
+    let sessionDetails = '';
+    if (exam.sessions && exam.sessions.length > 0) {
+      sessionDetails = exam.sessions.map(session => {
+        // Try to find matching student count
+        const key = `${exam.dates[0]?.split('T')[0]}_${session}`;
+        const count = exam.expectedStudents?.[key] || '—';
+        return `<li>${session}: ${count} students</li>`;
+      }).join('');
+    } else {
+      sessionDetails = '<li>—</li>';
+    }
+
+    let startDate = '—';
+let endDate = '—';
+
+if (exam.dates && exam.dates.length > 0) {
+  const sortedDates = exam.dates.sort((a, b) => new Date(a) - new Date(b));
+
+  startDate = new Date(sortedDates[0]).toLocaleDateString('en-GB', {
+    day: '2-digit', month: 'short', year: 'numeric'
+  });
+
+  endDate = new Date(sortedDates[sortedDates.length - 1]).toLocaleDateString('en-GB', {
+    day: '2-digit', month: 'short', year: 'numeric'
+  });
+}
+
+// Card layout
+card.innerHTML = `
+  <h2 style="text-transform: uppercase;">${exam.name}</h2>
+  <p><strong>Start Date:</strong> ${startDate}</p>
+  <p><strong>End Date:</strong> ${endDate}</p>
+  <button class="view-btn" onclick="viewExam('${exam._id}')">View Allocation</button>
+`;
+
+    container.appendChild(card);
+  });
+}
+
+    function viewExam(id) {
+      window.location.href = 'coe/allocations/' + id;
+    }
+
+    loadExams();
+  </script>
+</body>
+</html>

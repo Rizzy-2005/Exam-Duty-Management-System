@@ -262,7 +262,7 @@
             <button class="sidebar-button" id="modifyTeacher">Modify Teachers</button>
             <button class="sidebar-button">Classrooms</button>
             <button class="sidebar-button">History</button>
-            <button class="sidebar-button">Allocations</button>
+            <button class="sidebar-button" id = 'allocation'>Allocations</button>
         </aside>
 
         <main class="main-content">
@@ -346,6 +346,10 @@
     window.location.href = 'addTeacher.html';
   });
 });
+
+document.getElementById('allocation').addEventListener('click',()=>{
+    window.location.href = '/showAllocations.html'
+})
 
 document.getElementById('modifyTeacher').addEventListener('click',()=>{
     window.location.href = '/modifyTeacher.html';
