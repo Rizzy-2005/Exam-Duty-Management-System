@@ -742,5 +742,10 @@ if (examForm) {
     };
 }
 
+function confirmLogout() {
+        fetch('/login/logout', { credentials: 'include' });
+        window.location.href = 'http://localhost:3000';
+    }
+
         // Initialize calendar on load
         renderCalendar();
