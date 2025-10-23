@@ -134,6 +134,7 @@ async function loadSwapRequests() {
         });
 
         const result = await response.json();
+        console.log(JSON.stringify(result))
         
         loadingState.style.display = 'none';
 
