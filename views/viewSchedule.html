@@ -105,8 +105,6 @@ async function loadSchedules() {
     scheduleGrid.style.display = 'none';
 
     // Get teacherId from localStorage as fallback
-    const teacherId = localStorage.getItem('userId');
-    console.log('Teacher ID from localStorage:', teacherId);
 
     const response = await fetch(`http://localhost:5000/teacher/getSchedule`, {
       method: 'POST',
@@ -114,7 +112,7 @@ async function loadSchedules() {
         'Content-Type': 'application/json',
       },
       credentials: 'include', 
-      body: JSON.stringify({ teacherId: teacherId })
+
     });
 
     console.log('Response status:', response.status);
@@ -135,6 +133,7 @@ async function loadSchedules() {
       renderSchedules(allSchedules);
       updateScheduleCount(allSchedules.length);
       scheduleGrid.style.display = 'grid';
+      loadUserInfo(result.name)
     } else {
       emptyState.style.display = 'block';
       updateScheduleCount(0);
@@ -224,12 +223,10 @@ function updateScheduleCount(count) {
     document.getElementById('scheduleCount').textContent = `${count} Exam${count !== 1 ? 's' : ''}`;
 }
 
-function loadUserInfo() {
-    // Get from localStorage or session
-    const userName = localStorage.getItem('teacherName') || 'Prof. Johnson';
-    const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
+function loadUserInfo(name) {
+    const userInitials = name.split(' ').map(n => n[0]).join('').toUpperCase();
     
-    document.getElementById('userName').textContent = userName;
+    document.getElementById('userName').textContent = name;  // Use 'name' not 'userName'
     document.getElementById('userAvatar').textContent = userInitials;
 }
 
@@ -252,13 +249,14 @@ function hideLogout() {
 
 function confirmLogout() {
     localStorage.clear();
-    window.location.href = '/login.html';
+    window.location.href = 'http://localhost:3000/login.html';
 }
 function viewExamDetails(scheduleId) {
     // Redirect to exam allocation page with scheduleId in query params
     console.log(scheduleId);
     window.location.href = `http://localhost:5000/examAllocations.html?scheduleId=${scheduleId}`;
 }
+
 
 
 </script>
