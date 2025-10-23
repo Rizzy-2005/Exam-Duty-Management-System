@@ -2,8 +2,8 @@ const requests = require('../models/requestModel')
 
 exports.sendRequest = async (req, res) => {
   try {
-    const { scheduleId, fromTeacherId, toTeacherId, message,examId } = req.body;
-
+    const { scheduleId, toTeacherId, message,examId } = req.body;
+    const fromTeacherId = req.session.user.id;
     const newRequest = new requests({
         examId: examId,
         allocationId: scheduleId,  

@@ -93,54 +93,64 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Fetch schedules from backend
 async function loadSchedules() {
-const loadingState = document.getElementById('loadingState');
-const errorState = document.getElementById('errorState');
-const emptyState = document.getElementById('emptyState');
-const scheduleGrid = document.getElementById('scheduleGrid');
+  const loadingState = document.getElementById('loadingState');
+  const errorState = document.getElementById('errorState');
+  const emptyState = document.getElementById('emptyState');
+  const scheduleGrid = document.getElementById('scheduleGrid');
 
-try {
+  try {
     loadingState.style.display = 'block';
     errorState.style.display = 'none';
     emptyState.style.display = 'none';
     scheduleGrid.style.display = 'none';
 
-    //Get teacherId from localStorage
+    // Get teacherId from localStorage as fallback
     const teacherId = localStorage.getItem('userId');
-    console.log(JSON.stringify(teacherId));
+    console.log('Teacher ID from localStorage:', teacherId);
 
-    const response = await fetch(`/teacher/getSchedule`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        //teacher id to test backend
-        body: JSON.stringify({ teacherId: teacherId })
+    const response = await fetch(`http://localhost:5000/teacher/getSchedule`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', 
+      body: JSON.stringify({ teacherId: teacherId })
     });
 
+    console.log('Response status:', response.status);
+
     if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = await response.json();
+      console.error('Error response:', errorData);
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
 
     const result = await response.json();
+    console.log('Success result:', result);
     
     loadingState.style.display = 'none';
 
     if (result.success && result.data.length > 0) {
-        allSchedules = result.data;
-        renderSchedules(allSchedules);
-        updateScheduleCount(allSchedules.length);
-        scheduleGrid.style.display = 'grid';
+      allSchedules = result.data;
+      renderSchedules(allSchedules);
+      updateScheduleCount(allSchedules.length);
+      scheduleGrid.style.display = 'grid';
     } else {
-        emptyState.style.display = 'block';
-        updateScheduleCount(0);
+      emptyState.style.display = 'block';
+      updateScheduleCount(0);
     }
 
-} catch (error) {
+  } catch (error) {
     console.error('Error loading schedules:', error);
     loadingState.style.display = 'none';
     errorState.style.display = 'block';
-}
+    
+    // Show specific error message
+    const errorMsg = document.querySelector('#errorState p');
+    if (errorMsg) {
+      errorMsg.textContent = error.message || 'Failed to load schedules. Please try again.';
+    }
+  }
 }
 
 // Render schedules
@@ -246,7 +256,8 @@ function confirmLogout() {
 }
 function viewExamDetails(scheduleId) {
     // Redirect to exam allocation page with scheduleId in query params
-    window.location.href = `/examAllocations.html?scheduleId=${scheduleId}`;
+    console.log(scheduleId);
+    window.location.href = `http://localhost:5000/examAllocations.html?scheduleId=${scheduleId}`;
 }
 
 
