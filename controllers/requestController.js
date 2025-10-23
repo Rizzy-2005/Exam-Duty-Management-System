@@ -114,13 +114,44 @@ exports.receiveRequest = async (req, res) => {
 exports.updateRequestStatus = async (req, res) => {
   const id = req.params.id;
   const stat = req.body.status;
+  
   try {
-    const updatedRequest = await requests.findByIdAndUpdate( id,{ $set: { status: stat } }, { new: true });
-    if (!updatedRequest) {
+    const request = await requests.findById(id)
+      .populate('fromAllocationId')
+      .populate('toAllocationId');
+    
+    if (!request) {
       return res.status(404).send({ success: false, msg: "Request not found" });
     }
+
+    // If accepting the request, swap the allocations
+    if (stat === 'Approved') {
+      const fromAlloc = request.fromAllocationId;
+      const toAlloc = request.toAllocationId;
+
+      // Swap the teacherIds in both allocations
+      const fromTeacherId = fromAlloc.teacherId;
+      const toTeacherId = toAlloc.teacherId;
+
+      await allocationModel.findByIdAndUpdate(fromAlloc._id, {
+        teacherId: toTeacherId
+      });
+
+      await allocationModel.findByIdAndUpdate(toAlloc._id, {
+        teacherId: fromTeacherId
+      });
+    }
+
+    // Update the request status
+    const updatedRequest = await requests.findByIdAndUpdate(
+      id,
+      { $set: { status: stat } },
+      { new: true }
+    );
+
     res.status(200).send({ success: true, request: updatedRequest });
   } catch (error) {
+    console.error('Error updating request:', error);
     res.status(400).send({ success: false, msg: error.message });
   }
 };

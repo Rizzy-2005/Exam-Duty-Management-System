@@ -122,9 +122,6 @@ async function loadSwapRequests() {
         emptyState.style.display = 'none';
         requestsGrid.style.display = 'none';
 
-        // Get teacherId from localStorage
-        const teacherId = localStorage.getItem('userId');
-
         const response = await fetch(`http://localhost:5000/requests/receive`, {
             method: 'POST',
             headers: {
@@ -262,53 +259,50 @@ function filterRequests(type) {
     updateRequestsCount(filteredRequests.length);
 }
 
-// Handle accept action
+// Show confirmation modal for accept
 function handleAccept(requestId, requesterName) {
     pendingAction = {
         type: 'accept',
         requestId: requestId,
         requesterName: requesterName
     };
-
+    
     document.getElementById('modalTitle').textContent = 'Accept Swap Request';
-    document.getElementById('modalMessage').textContent = `Are you sure you want to accept the swap request from ${requesterName}? This will exchange your exam duties.`;
-    document.getElementById('confirmBtn').className = 'modal-btn btn-confirm btn-accept';
+    document.getElementById('modalMessage').textContent = `Are you sure you want to accept the swap request from ${requesterName}?`;
     document.getElementById('confirmationModal').classList.add('show');
 }
 
-// Handle reject action
+// Show confirmation modal for reject
 function handleReject(requestId, requesterName) {
     pendingAction = {
         type: 'reject',
         requestId: requestId,
         requesterName: requesterName
     };
-
+    
     document.getElementById('modalTitle').textContent = 'Reject Swap Request';
     document.getElementById('modalMessage').textContent = `Are you sure you want to reject the swap request from ${requesterName}?`;
-    document.getElementById('confirmBtn').className = 'modal-btn btn-confirm btn-reject-confirm';
     document.getElementById('confirmationModal').classList.add('show');
 }
 
 // Execute the pending action
 async function executeAction() {
-    if (!pendingAction) return;
+    if (!pendingAction) {
+        console.error('No pending action found');
+        hideModal();
+        return;
+    }
 
+    const action = { ...pendingAction }; // Copy the action
     hideModal();
 
-    const teacherId = localStorage.getItem('userId');
-    const endpoint = pendingAction.type === 'accept' ? '/teacher/acceptSwap' : '/teacher/rejectSwap';
-
     try {
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+        const response = await fetch(`http://localhost:5000/requests/update/${action.requestId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({
-                requestId: pendingAction.requestId,
-                teacherId: teacherId
+            body: JSON.stringify({ 
+                status: action.type === 'accept' ? 'Approved' : 'Rejected' 
             })
         });
 
@@ -316,22 +310,21 @@ async function executeAction() {
 
         if (result.success) {
             showToast(
-                pendingAction.type === 'accept' 
+                action.type === 'accept' 
                     ? `✓ Swap accepted successfully!` 
                     : `Swap request rejected.`,
                 'success'
             );
             
-            // Reload requests after 1 second
             setTimeout(() => {
                 loadSwapRequests();
-            }, 1000);
+            }, 1500);
         } else {
-            showToast(`Failed to ${pendingAction.type} swap request. Please try again.`, 'error');
+            showToast(`Failed to ${action.type} swap request.`, 'error');
         }
 
     } catch (error) {
-        console.error(`Error ${pendingAction.type}ing swap:`, error);
+        console.error(`Error ${action.type}ing swap:`, error);
         showToast(`An error occurred. Please try again.`, 'error');
     }
 
@@ -384,7 +377,7 @@ function showToast(message, type = 'success') {
 
 function hideModal() {
     document.getElementById('confirmationModal').classList.remove('show');
-    pendingAction = null;
+    // Don't clear pendingAction here - let executeAction handle it
 }
 
 function goBack() {
