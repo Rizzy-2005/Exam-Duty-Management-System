@@ -7,6 +7,7 @@ const coeController = require("../controllers/coeController");
 router.post('/addTeacher', coeController.addTeacher);
 router.get('/getClassrooms',coeController.loadClassrooms);
 router.get('/getTeachers', coeController.getTeachers);
+router.post('/createExam', coeController.createExam);
 
 
 module.exports = router;
