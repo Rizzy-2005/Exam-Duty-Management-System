@@ -89,27 +89,31 @@ exports.getAllocationDetails = async (req, res) => {
     .sort({ date: 1, session: 1 });
 
     //Transform data with full date info
-    const transformed = relatedAllocations.map(a => {
-      const dateObj = new Date(a.date);
-      return {
-        id: a._id,
-        teacher: a.teacherId.name,
-        teacherId: a.teacherId,
-        date: dateObj.toISOString().split('T')[0],  // YYYY-MM-DD
-        dateDay: dateObj.getDate(),
-        dateMonth: dateObj.toLocaleString('en-US', { month: 'short' }),
-        dateYear: dateObj.getFullYear(),
-        classroom: {
-          number: a.classroomId.name,
-          building: a.classroomId.building
-        },
-        exam: {
-          title: a.examId.title,
-          id: a.examId
-        },
-        session: a.session === 'FN' ? 'Morning' : 'Afternoon'
-      };
-    });
+   const transformed = relatedAllocations.map(a => {
+  const dateObj = new Date(a.date);
+  return {
+    id: a._id,
+    teacher: a.teacherId.name,
+    teacherId: {
+      _id: a.teacherId._id,
+      name: a.teacherId.name
+    },
+    date: dateObj.toISOString().split('T')[0],
+    dateDay: dateObj.getDate(),
+    dateMonth: dateObj.toLocaleString('en-US', { month: 'short' }),
+    dateYear: dateObj.getFullYear(),
+    classroom: {
+      number: a.classroomId.name,
+      building: a.classroomId.building
+    },
+    exam: {
+      title: a.examId.title,
+      id: a.examId._id
+    },
+    session: a.session === 'FN' ? 'Morning' : 'Afternoon'
+  };
+});
+
 
     res.status(200).json({ success: true, data: transformed });
 

@@ -23,6 +23,33 @@
     transform: scale(1.02);
   }
 
+  /* Current User Allocation Style */
+  .my-allocation {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: 3px solid #5a67d8;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .my-allocation:hover {
+    transform: none;
+  }
+  .my-allocation h3,
+  .my-allocation p {
+    color: white;
+  }
+
+  .section-title {
+    margin-top: 30px;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    color: #333;
+    border-bottom: 2px solid #667eea;
+    padding-bottom: 8px;
+  }
+
   /* Swap Modal Styles */
   .swap-modal {
     display: none;
@@ -88,6 +115,22 @@
     background: #e74c3c;
     color: white;
   }
+  .request-sent-label {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #4caf50;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+.detail-item.request-sent {
+  opacity: 0.8;
+  pointer-events: none;
+}
+
   @keyframes fadeIn {
     from { opacity: 0; transform: scale(0.9); }
     to { opacity: 1; transform: scale(1); }
@@ -107,19 +150,25 @@
       <div class="user-avatar" id="userAvatar">PJ</div>
     </div>
   </header>
-  <!-- Add date filter above allocations -->
-<div class="filter-bar fade-in" style="margin: 20px 0; text-align: center;">
-  <label for="dateFilter"><strong>Filter by Date:</strong></label>
-  <input type="date" id="dateFilter" style="padding: 6px; border-radius: 6px; border: 1px solid #ccc;" />
-</div>
 
+  <!-- Add date filter above allocations -->
+  <div class="filter-bar fade-in" style="margin: 20px 0; text-align: center;">
+    <label for="dateFilter"><strong>Filter by Date:</strong></label>
+    <input type="date" id="dateFilter" style="padding: 6px; border-radius: 6px; border: 1px solid #ccc;" />
+  </div>
 
   <!-- Exam Details -->
   <div class="details-container fade-in">
-    <h2 id="examDateTitle">Loading allocations...</h2>
-    <div class="details-grid" id="detailsGrid">
-      <!-- Allocations will populate here -->
+   
+    
+    <!-- Current User's Allocation -->
+    <div id="myAllocationContainer" style="display: none;">
+      <div class="details-grid" id="myAllocationGrid"></div>
     </div>
+
+    <!-- Other Teachers' Allocations -->
+    <h3 class="section-title" id="othersTitle" style="display: none;">Allocations for the selected exam</h3>
+    <div class="details-grid" id="detailsGrid"></div>
   </div>
 
   <!-- Actions -->
@@ -141,18 +190,19 @@
 </div>
 
 <script>
+let selectedAllocation = null;
 let selectedTeacher = null;
-let allAllocations = []; // store all fetched allocations
+let allAllocations = [];
+let currentTeacherId = null;
+let sentRequests = []; // keep track of teachers who got a swap request
 
-// Get scheduleId from URL
 function getScheduleIdFromURL() {
   const params = new URLSearchParams(window.location.search);
   return params.get('scheduleId');
 }
 
-// Fetch allocations from backend
 async function loadAllocations() {
-  const scheduleId = getScheduleIdFromURL();// current teacher
+  const scheduleId = getScheduleIdFromURL();
   const detailsGrid = document.getElementById("detailsGrid");
   const examDateTitle = document.getElementById("examDateTitle");
 
@@ -183,6 +233,13 @@ async function loadAllocations() {
         };
       });
 
+      // Find the current teacher's ID from the clicked schedule
+      const myAllocation = allAllocations.find(a => a.id === scheduleId);
+      if (myAllocation) {
+        currentTeacherId = myAllocation.teacherId._id || myAllocation.teacherId.id || myAllocation.teacherId;
+        console.log('Current Teacher ID:', currentTeacherId);
+      }
+
       populateAllocations(allAllocations);
       examDateTitle.textContent = "Allocations for the selected exam";
     } else {
@@ -195,10 +252,19 @@ async function loadAllocations() {
   }
 }
 
-// Populate allocations dynamically (with optional date filter)
+function isCurrentTeacher(allocation) {
+  const allocTeacherId = allocation.teacherId._id || allocation.teacherId.id || allocation.teacherId;
+  return currentTeacherId && allocTeacherId === currentTeacherId;
+}
+
 function populateAllocations(allocations, filterDate = null) {
-  const grid = document.getElementById("detailsGrid");
-  grid.innerHTML = "";
+  const myGrid = document.getElementById("myAllocationGrid");
+  const othersGrid = document.getElementById("detailsGrid");
+  const myContainer = document.getElementById("myAllocationContainer");
+  const othersTitle = document.getElementById("othersTitle");
+  
+  myGrid.innerHTML = "";
+  othersGrid.innerHTML = "";
 
   let filtered = allocations;
 
@@ -208,27 +274,64 @@ function populateAllocations(allocations, filterDate = null) {
   }
 
   if (filtered.length === 0) {
-    grid.innerHTML = `<p style="text-align:center; color:#888;">No allocations found for this date</p>`;
+    othersGrid.innerHTML = `<p style="text-align:center; color:#888;">No allocations found for this date</p>`;
+    myContainer.style.display = "none";
+    othersTitle.style.display = "none";
     return;
   }
 
-  filtered.forEach(item => {
-    const div = document.createElement("div");
-    div.classList.add("detail-item");
+  // Separate current teacher's allocation from others
+  const myAllocations = filtered.filter(item => isCurrentTeacher(item));
+  const otherAllocations = filtered.filter(item => !isCurrentTeacher(item));
 
-    div.innerHTML = `
-      <h3>${item.teacher}</h3>
-      <p><strong>Date:</strong> ${item.dateDay} ${item.dateMonth} ${item.dateYear}</p>
-      <p><strong>Room:</strong> ${item.classroom.number}</p>
-      <p><strong>Block:</strong> ${item.classroom.building}</p>
-      <p><strong>Session:</strong> ${item.session}</p>
-    `;
-    div.onclick = () => openModal(item);
-    grid.appendChild(div);
-  });
+  console.log('My allocations:', myAllocations.length);
+  console.log('Other allocations:', otherAllocations.length);
+
+  // Display current teacher's allocation at the top
+  if (myAllocations.length > 0) {
+    myContainer.style.display = "block";
+    myAllocations.forEach(item => {
+      const div = document.createElement("div");
+      div.classList.add("detail-item", "my-allocation");
+      div.innerHTML = `
+        <h3>${item.teacher} (You)</h3>
+        <p><strong>Date:</strong> ${item.dateDay} ${item.dateMonth} ${item.dateYear}</p>
+        <p><strong>Room:</strong> ${item.classroom.number}</p>
+        <p><strong>Block:</strong> ${item.classroom.building}</p>
+        <p><strong>Session:</strong> ${item.session}</p>
+      `;
+      myGrid.appendChild(div);
+    });
+  } else {
+    myContainer.style.display = "none";
+  }
+
+  // Display other teachers' allocations
+  if (otherAllocations.length > 0) {
+    othersTitle.style.display = "block";
+    otherAllocations.forEach(item => {
+      const div = document.createElement("div");
+      div.classList.add("detail-item");
+      div.innerHTML = `
+        <h3>${item.teacher}</h3>
+        <p><strong>Date:</strong> ${item.dateDay} ${item.dateMonth} ${item.dateYear}</p>
+        <p><strong>Room:</strong> ${item.classroom.number}</p>
+        <p><strong>Block:</strong> ${item.classroom.building}</p>
+        <p><strong>Session:</strong> ${item.session}</p>
+      `;
+      div.onclick = () => openModal(item);
+      othersGrid.appendChild(div);
+    });
+  } else {
+    othersTitle.style.display = "none";
+    if (myAllocations.length === 0) {
+      othersGrid.innerHTML = `<p style="text-align:center; color:#888;">No allocations found</p>`;
+    } else {
+      othersGrid.innerHTML = `<p style="text-align:center; color:#888;">No other teachers assigned</p>`;
+    }
+  }
 }
 
-// Swap Modal functions
 function openModal(allocation) {
   selectedAllocation = allocation;
   selectedTeacher = allocation.teacher;
@@ -241,13 +344,10 @@ function closeModal() {
   document.getElementById("swapModal").classList.remove("show");
 }
 
-// Send swap request to backend
 async function sendSwapRequest() {
   const message = document.getElementById("swapMessage").value;
   const scheduleId = getScheduleIdFromURL();
   const toTeacherId = selectedAllocation.teacherId._id || selectedAllocation.teacherId;
-  
-  // Get examId from the correct path
   const examId = selectedAllocation.exam.id._id || selectedAllocation.exam.id;
   
   console.log("Request data:", { 
@@ -289,13 +389,10 @@ async function sendSwapRequest() {
   }
 }
 
-
-// Navigation
 function goBack() {
   window.history.back();
 }
 
-// Load user info
 function loadUserInfo() {
   const userName = localStorage.getItem('teacherName') || 'Prof. Johnson';
   const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
@@ -303,7 +400,6 @@ function loadUserInfo() {
   document.getElementById('userAvatar').textContent = userInitials;
 }
 
-// Logout modal
 document.getElementById('userAvatar').addEventListener('click', function() {
   const confirmed = confirm('Do you want to logout?');
   if (confirmed) {
@@ -312,18 +408,15 @@ document.getElementById('userAvatar').addEventListener('click', function() {
   }
 });
 
-// Date filter listener
 document.getElementById("dateFilter").addEventListener("change", (e) => {
-  const selectedDate = e.target.value; // YYYY-MM-DD
+  const selectedDate = e.target.value;
   populateAllocations(allAllocations, selectedDate);
 });
 
-// On page load
 document.addEventListener('DOMContentLoaded', () => {
   loadAllocations();
   loadUserInfo();
 });
-
 </script>
 </body>
 </html>
