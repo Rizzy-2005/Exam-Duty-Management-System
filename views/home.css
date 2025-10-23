@@ -203,6 +203,7 @@ body {
     box-shadow: var(--shadow-lg);
     position: relative;
     overflow: hidden;
+    z-index: 1; /* Added for stacking context */
 }
 
 .notification-bar::before {
@@ -215,6 +216,7 @@ body {
     background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
     opacity: 0;
     transition: opacity 0.3s ease;
+    pointer-events: none; /* ⚠️ CRITICAL FIX - Allows clicks to pass through */
 }
 
 .notification-bar:hover::before {
@@ -229,6 +231,8 @@ body {
     font-size: 2rem;
     margin-bottom: 1rem;
     display: block;
+    position: relative; /* Ensures it's above ::before */
+    z-index: 2;
 }
 
 .notification-count {
@@ -236,12 +240,16 @@ body {
     font-weight: 700;
     margin-bottom: 0.5rem;
     transition: transform 0.3s ease;
+    position: relative; /* Ensures it's above ::before */
+    z-index: 2;
 }
 
 .notification-text {
     font-size: 0.875rem;
     opacity: 0.9;
     margin-bottom: 1rem;
+    position: relative; /* Ensures it's above ::before */
+    z-index: 2;
 }
 
 .view-requests-btn {
@@ -253,6 +261,8 @@ body {
     font-size: 0.875rem;
     cursor: pointer;
     transition: all 0.2s ease;
+    position: relative; /* Ensures it's above ::before */
+    z-index: 2;
 }
 
 .view-requests-btn:hover {
