@@ -4,7 +4,7 @@ const Class = require('../models/classroomModel')
 
 exports.getSchedule = async (req, res) => {
 try {
-    const teacherId = req.body.teacherId;
+    const teacherId = req.session.user.id;
 
     if (!teacherId) {
         return res.status(400).json({
@@ -58,6 +58,7 @@ res.status(500).json({
 });
 }
 };
+
 exports.getAllocationDetails = async (req, res) => {
   try {
     const { scheduleId } = req.body;

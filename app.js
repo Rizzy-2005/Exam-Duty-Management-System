@@ -15,9 +15,25 @@ const checkSession = require('./middlewares/authMiddleware');
 //Initializing the express app
 const app = express();
 app.use(express.json());
+
+// CORS configuration - MUST come BEFORE session
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:5000'];
+
 app.use(cors({
-  origin: "http://localhost:3000", // React frontend URL
-  credentials: true
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like Postman, mobile apps, or same-origin)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 //Initializing the session
@@ -28,28 +44,30 @@ app.use(session({
     cookie: {
         maxAge: 1000 * 60 * 60, // 1 hour
         httpOnly: true,
-        secure: false // true only if using HTTPS
+        secure: false, // true only if using HTTPS
+        sameSite: 'lax' // IMPORTANT: Add this for cross-origin
     }
 }));
 
 //Connect to mongodb
 connectDb();
 
-//Using different routes and static pages
-app.use(express.static(path.join(__dirname, "./views")));
+//API routes
 app.use('/login', authRoutes);
 app.use('/coe', checkSession, coeRoutes);
-app.use('/teacher',checkSession, teachRoutes);
-app.use('/requests',reqRoutes);
+app.use('/teacher', checkSession, teachRoutes);
+app.use('/requests', reqRoutes);
 
-const PORT = 5000;
+//Serving view files
+app.use(express.static(path.join(__dirname, "./views")));
 
-app.get('/coeHome', checkSession, (req,res) => {
-  res.redirect("/coeHome.html");
+//HTML page routes frrom react
+app.get('/coeHome', checkSession, (req, res) => {
+  res.sendFile(path.join(__dirname, "./views/coeHome.html"));
 });
 
-app.get('/teacherHome', checkSession, (req,res) => {
-  res.redirect("/home.html");
+app.get('/teacherHome', checkSession, (req, res) => {
+  res.sendFile(path.join(__dirname, "./views/home.html"));
 });
 
 //Error-handling middleware
@@ -72,11 +90,9 @@ app.use((err, req, res, next) => {
   `);
 });
 
+const PORT = 5000;
 
 app.listen(PORT, (err) => {
   if(err) throw err;
   console.log(`The server has hosted on http://localhost:${PORT}`);
 });
-
-
-
