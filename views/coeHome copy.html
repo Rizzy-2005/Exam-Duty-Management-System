@@ -250,7 +250,7 @@
         <nav class="nav-menu">
             <a href="#home">Home</a>
             <a href="#notification">Notification</a>
-            <a href="#logout">Logout</a>
+            <a href="#logout" onclick="confirmLogout()">Logout</a>
         </nav>
     </header>
 
@@ -355,6 +355,10 @@ document.getElementById('modifyTeacher').addEventListener('click',()=>{
     createExam.addEventListener('click',()=>{
         window.location.href = '/createExam copy.html';
     })
+    function confirmLogout() {
+        fetch('/login/logout', { credentials: 'include' });
+        window.location.href = 'http://localhost:3000';
+    }
 </script>
 </body>
 
