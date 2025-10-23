@@ -155,3 +155,20 @@ exports.updateRequestStatus = async (req, res) => {
     res.status(400).send({ success: false, msg: error.message });
   }
 };
+
+// Get the count of pending requests for logged-in teacher
+exports.getPendingCount = async (req, res) => {
+  try {
+    const teacherId = req.session.user.id;
+    if (!teacherId) {
+      return res.status(401).json({ success: false, message: 'Not authenticated' });
+    }
+
+    const count = await requests.countDocuments({ toTeacherId: teacherId, status: 'Pending' });
+    
+    res.status(200).json({ success: true, count });
+  } catch (error) {
+    console.error('Error fetching pending request count:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
