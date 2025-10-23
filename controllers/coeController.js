@@ -43,6 +43,20 @@ exports.loadClassrooms = async (req,res)=>{
     }
 }
 
+exports.getExams = async (req,res) => {
+  try{
+  const exams = await Exam.find()
+  if (!exams || exams.length === 0){
+    return res.status(404).json({ message: "No exam found" });
+  }
+  res.json(exams);
+  }
+  catch(error){
+    console.error("Error fetching exams:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 exports.getTeachers = async (req, res) => {
   try {
     // Fetch only users with role 'Teacher'
@@ -108,3 +122,36 @@ exports.createExam = async (req, res) => {
     });
   }
 };
+
+exports.getExamById = async (req, res) => {
+  try {
+    const exam = await Exam.findById(req.params.id);
+    if (!exam) return res.status(404).json({ message: "Exam not found" });
+    res.json(exam);
+  } catch (err) {
+    console.error("Error fetching exam:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.getAllocations = async (req, res) => {
+  try {
+    const { examId } = req.params;
+    console.log(`[CONTROLLER] Fetching allocations for examId: ${examId}`);
+
+    const allocations = await Allocation.find({ examId })
+      .populate('teacherId', 'name userId')
+      .populate('classroomId'); // Remove field selection temporarily
+
+    // Debug log
+    console.log('Sample allocation:', JSON.stringify(allocations[0], null, 2));
+
+    console.log(`[SUCCESS] Found ${allocations.length} allocations`);
+    res.json(allocations);
+
+  } catch (error) {
+    console.error('[ERROR] getAllocations failed:', error);
+    res.status(500).json({ message: 'Server error fetching allocations' });
+  }
+};
+
