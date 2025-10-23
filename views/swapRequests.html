@@ -125,18 +125,13 @@ async function loadSwapRequests() {
         // Get teacherId from localStorage
         const teacherId = localStorage.getItem('userId');
 
-        const response = await fetch(`/teacher/getSwapRequests`, {
+        const response = await fetch(`http://localhost:5000/requests/receive`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             credentials: 'include',
-            body: JSON.stringify({ teacherId: teacherId })
         });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
 
         const result = await response.json();
         
@@ -405,8 +400,8 @@ function hideLogout() {
 }
 
 function confirmLogout() {
-    localStorage.clear();
-    window.location.href = '/login.html';
+  fetch('/login/logout', { credentials: 'include' });
+  window.location.href = 'http://localhost:3000';
 }
 </script>
 </body>
