@@ -82,17 +82,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded',function(){
-    name = localStorage.getItem('teacherName');
-    const namespan = document.getElementById('name');
-    const avatarspan = document.getElementById('avatar');
-
-    namespan.textContent = `${name}`;
-    const initials = name.split(' ')
-        .map(word => word.charAt(0))
-        .join('')
-        .toUpperCase();
-
-    avatarspan.textContent = initials;
+    loadUserInfo();
 })
 
 function navigateToSchedule(){
