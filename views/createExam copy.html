@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Exam</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            height: 50px;
+            width: auto;
+        }
+
+        .topbar-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .topbar-btn {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .topbar-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .form-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .form-title {
+            color: #1e3c72;
+            margin-bottom: 2rem;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .popup-btn {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .popup-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3);
+        }
+
+        .selected-items {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+            min-height: 40px;
+        }
+
+        .selected-item {
+            display: inline-block;
+            background: #1e3c72;
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            margin: 0.25rem;
+            font-size: 0.9rem;
+        }
+
+        .remove-item {
+            margin-left: 0.5rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .remove-item:hover {
+            color: #ff6b6b;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(40, 167, 69, 0.3);
+        }
+
+        /* Date Selector Styles */
+        .date-selector-container {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .date-input-wrapper {
+            flex: 1;
+        }
+
+        .add-date-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .add-date-btn:hover {
+            background: #218838;
+        }
+
+        .selected-dates {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .date-chip {
+            background: #1e3c72;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .date-chip .remove-date {
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .date-chip .remove-date:hover {
+            color: #ff6b6b;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 85vh; /* Limit height to viewport */
+    overflow-y: auto; /* Enable scrolling within modal */
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .modal-header h3 {
+            color: #1e3c72;
+            margin: 0;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .modal-actions {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .btn-primary, .btn-secondary {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #1e3c72;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2a5298;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        /* Classroom Grid */
+        .block-selector {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .block-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid #1e3c72;
+            background: white;
+            color: #1e3c72;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .block-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .block-btn.active {
+            background: #1e3c72;
+            color: white;
+        }
+
+        .classroom-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .classroom-item {
+            padding: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .classroom-item:hover {
+            border-color: #1e3c72;
+            background: #f0f7ff;
+        }
+
+        .classroom-item.selected {
+            background: #1e3c72;
+            color: white;
+            border-color: #1e3c72;
+        }
+
+        /* Teacher Unavailability */
+        .teacher-search {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .teacher-search input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        .add-teacher-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .add-teacher-btn:hover {
+            background: #218838;
+        }
+
+        .teacher-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .teacher-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .teacher-item.unavailable {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+
+        .toggle-btn {
+            background: #ffc107;
+            color: #000;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-btn:hover {
+            background: #e0a800;
+        }
+
+        /* Calendar Styles */
+        .calendar-container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+        }
+
+        .calendar-nav {
+            background: #1e3c72;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .calendar-nav:hover {
+            background: #2a5298;
+        }
+
+        .calendar-month-year {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1e3c72;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-weight: 600;
+            padding: 0.75rem;
+            color: white;
+            background: #1e3c72;
+            border-right: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .calendar-day-header:last-child {
+            border-right: none;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            background: white;
+            position: relative;
+        }
+
+        .calendar-day:nth-child(7n) {
+            border-right: none;
+        }
+
+        .calendar-day:hover {
+            background: #e3f2fd;
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        .calendar-day.selected {
+            background: #1e3c72;
+            color: white;
+        }
+
+        .calendar-day.selected:hover {
+            background: #2a5298;
+        }
+
+        .calendar-day.other-month {
+            color: #ccc;
+            background: #f9f9f9;
+            cursor: default;
+        }
+
+        .calendar-day.other-month:hover {
+            background: #f9f9f9;
+            transform: none;
+        }
+
+        .calendar-day.past {
+            color: #ccc;
+            background: #f5f5f5;
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+
+        .calendar-day.past:hover {
+            background: #f5f5f5;
+            transform: none;
+        }
+
+        .calendar-day.today {
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+
+        .calendar-day.today::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: #ff6b6b;
+            border-radius: 50%;
+        }
+
+        .calendar-selected-preview {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div style="padding-left: 75px; padding-top: 8px;padding-bottom: 8px;">
+            <span style="color: white; font-size: 1.5rem; font-weight: 600;">Brennan College</span>
+        </div>
+        <div class="topbar-buttons">
+            <button class="topbar-btn" id='home'>Home</button>
+            <button class="topbar-btn">Notification</button>
+            <button class="topbar-btn">Logout</button>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <h2 class="form-title">Create New Exam</h2>
+        
+        <form id="examForm">
+            <div class="form-group">
+                <label for="examName">Exam Name</label>
+                <input type="text" id="examName" name="examName" required>
+            </div>
+
+            <div class="form-group">
+                <label>Exam Dates</label>
+                <button type="button" class="popup-btn" id="datePickerBtn">Select Dates from Calendar</button>
+                <div class="selected-dates" id="selectedDates">
+                    <small style="color: #666;">No dates selected</small>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Classroom Selection</label>
+                <button type="button" class="popup-btn" id="classroomBtn">Select Classrooms</button>
+                <div class="selected-items" id="selectedClassrooms">
+                    <small>No classrooms selected</small>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Mark Teacher Unavailability</label>
+                <button type="button" class="popup-btn" id="unavailabilityBtn">Manage Teacher Unavailability</button>
+                <div class="selected-items" id="unavailableTeachers">
+                    <small>No teachers marked unavailable</small>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">Create Exam</button>
+        </form>
+    </div>
+
+    <!-- Date Picker Modal -->
+    <div id="datePickerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Select Exam Dates</h3>
+                <span class="close" id="closeDatePicker">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button class="calendar-nav" id="prevMonth">&lt;</button>
+                        <span class="calendar-month-year" id="monthYear"></span>
+                        <button class="calendar-nav" id="nextMonth">&gt;</button>
+                    </div>
+                    <div class="calendar-grid">
+                        <div class="calendar-day-header">Sun</div>
+                        <div class="calendar-day-header">Mon</div>
+                        <div class="calendar-day-header">Tue</div>
+                        <div class="calendar-day-header">Wed</div>
+                        <div class="calendar-day-header">Thu</div>
+                        <div class="calendar-day-header">Fri</div>
+                        <div class="calendar-day-header">Sat</div>
+                    </div>
+                    <div class="calendar-grid" id="calendarDays" style="border-top: none;">
+                    </div>
+                    <div class="calendar-selected-preview">
+                        <strong>Selected Dates:</strong>
+                        <div id="previewDates" style="margin-top: 0.5rem;">
+                            <small style="color: #666;">No dates selected</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="cancelDatePicker">Cancel</button>
+                <button class="btn-primary" id="confirmDates">Confirm Selection</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Classroom Selection Modal -->
+    <div id="classroomModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Select Classrooms</h3>
+                <span class="close" id="closeClassroom">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="block-selector" id="blockSelector">
+                    <!-- Building buttons will be populated here -->
+                </div>
+                <div class="classroom-grid" id="classroomGrid">
+                    <!-- Classrooms will be populated here -->
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="cancelClassroom">Cancel</button>
+                <button class="btn-primary" id="confirmClassroom">Confirm Selection</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teacher Unavailability Modal -->
+    <div id="unavailabilityModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Manage Teacher Unavailability</h3>
+                <span class="close" id="closeUnavailability">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="teacher-search">
+                    <input type="text" id="teacherSearch" placeholder="Enter teacher name">
+                    <button class="add-teacher-btn" id="addTeacher">Add Teacher</button>
+                </div>
+                <div class="teacher-list" id="teacherList">
+                    <!-- Teachers will be populated here -->
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="cancelUnavailability">Cancel</button>
+                <button class="btn-primary" id="confirmUnavailability">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const home = document.getElementById('home');
+        if (home) {
+            home.addEventListener('click', () => {
+                window.location.href = '/coeHome.html';
+            });
+        }
+
+        const classrooms = {};
+        let selectedClassrooms = [];
+        let tempSelectedClassrooms = [];
+        let teacherList = [];
+        let unavailableTeachers = [];
+        let currentBlock = '';
+        let selectedDates = [];
+        let tempSelectedDates = [];
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+
+        // Modal elements
+        const classroomModal = document.getElementById('classroomModal');
+        const unavailabilityModal = document.getElementById('unavailabilityModal');
+        const datePickerModal = document.getElementById('datePickerModal');
+
+        // Fetch classrooms from database
+        fetch("/coe/createExam")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Classrooms from server:", data);
+
+                // Group classrooms by building
+                data.forEach(item => {
+                    const building = item.building;
+                    const name = item.name;
+
+                    if (!classrooms[building]) {
+                        classrooms[building] = [];
+                    }
+                    classrooms[building].push(name);
+                });
+
+                console.log("Organized classrooms:", classrooms);
+                
+                // Create buttons AFTER data is fetched
+                createButtons();
+            })
+            .catch(err => {
+                console.error("Error fetching classrooms:", err);
+                // Use sample data if fetch fails
+                classrooms['Block A'] = ['A101', 'A102', 'A103', 'A104'];
+                classrooms['Block B'] = ['B101', 'B102', 'B103', 'B104'];
+                classrooms['Block C'] = ['C101', 'C102', 'C103', 'C104'];
+                createButtons();
+            });
+
+        // Fetch teachers from database
+        fetch("/coe/getTeachers")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Teachers from server:", data);
+                
+                // Extract teacher names from the user objects
+                teacherList = data.map(teacher => teacher.name);
+                
+                console.log("Loaded teachers:", teacherList);
+                displayTeachers();
+            })
+            .catch(err => {
+                console.error("Error fetching teachers:", err);
+                // Use sample data if fetch fails
+                teacherList = ['Dr. Smith', 'Prof. Johnson', 'Ms. Davis', 'Mr. Wilson', 'Dr. Brown'];
+                console.log("Using sample teachers");
+                displayTeachers();
+            });
+
+        // Fetch teachers from database
+        fetch("/coe/getTeachers")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Teachers from server:", data);
+                
+                // Assuming the API returns an array of teacher objects with a 'name' property
+                // Adjust the property name based on your actual API response
+                teacherList = data.map(teacher => teacher.name || teacher.fullName || teacher);
+                
+                console.log("Loaded teachers:", teacherList);
+            })
+            .catch(err => {
+                console.error("Error fetching teachers:", err);
+                // Use sample data if fetch fails
+                teacherList = ['Dr. Smith', 'Prof. Johnson', 'Ms. Davis', 'Mr. Wilson', 'Dr. Brown'];
+                console.log("Using sample teachers");
+            });
+
+        function createButtons() {
+            const blockSelector = document.getElementById('blockSelector');
+            blockSelector.innerHTML = '';
+
+            // Create select all button
+            const allBtn = document.createElement('button');
+            allBtn.id = 'selectAllBtn';
+            allBtn.textContent = 'Select All';
+            allBtn.style.marginLeft = 'auto';
+            allBtn.style.background = '#28a745';
+            allBtn.className = 'block-btn';
+            allBtn.onclick = selectAllClassrooms;
+            blockSelector.appendChild(allBtn);
+
+            let index = 0;
+            // Add button for each building
+            Object.keys(classrooms).forEach((building) => {
+                const btn = document.createElement('button');
+                btn.className = 'block-btn';
+                btn.dataset.block = building;
+                btn.textContent = building;
+
+                if (index === 0) {
+                    btn.classList.add('active');
+                    index++;
+                }
+                
+                btn.onclick = () => {
+                    document.querySelectorAll('.block-btn').forEach(b => {
+                        if (b.id !== 'selectAllBtn') {
+                            b.classList.remove('active');
+                        }
+                    });
+                    btn.classList.add('active');
+                    currentBlock = building;
+                    loadClassrooms(building);
+                };
+                
+                blockSelector.insertBefore(btn, allBtn);
+            });
+
+            // Set initial block and load classrooms
+            if (Object.keys(classrooms).length > 0) {
+                currentBlock = Object.keys(classrooms)[0];
+                loadClassrooms(currentBlock);
+            }
+        }
+
+        // Date Picker Functions
+        const datePickerBtn = document.getElementById('datePickerBtn');
+        const closeDatePicker = document.getElementById('closeDatePicker');
+        const cancelDatePicker = document.getElementById('cancelDatePicker');
+        const confirmDates = document.getElementById('confirmDates');
+        const prevMonth = document.getElementById('prevMonth');
+        const nextMonth = document.getElementById('nextMonth');
+
+        if (datePickerBtn) {
+            datePickerBtn.addEventListener('click', function() {
+                tempSelectedDates = [...selectedDates];
+                datePickerModal.style.display = 'block';
+                renderCalendar();
+            });
+        }
+
+        if (closeDatePicker) {
+            closeDatePicker.onclick = function() {
+                datePickerModal.style.display = 'none';
+            };
+        }
+
+        if (cancelDatePicker) {
+            cancelDatePicker.onclick = function() {
+                datePickerModal.style.display = 'none';
+            };
+        }
+
+        if (confirmDates) {
+            confirmDates.onclick = function() {
+                selectedDates = [...tempSelectedDates];
+                selectedDates.sort();
+                updateSelectedDates();
+                datePickerModal.style.display = 'none';
+            };
+        }
+
+        if (prevMonth) {
+            prevMonth.addEventListener('click', function() {
+                currentMonth--;
+                if (currentMonth < 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                }
+                renderCalendar();
+            });
+        }
+
+        if (nextMonth) {
+            nextMonth.addEventListener('click', function() {
+                currentMonth++;
+                if (currentMonth > 11) {
+                    currentMonth = 0;
+                    currentYear++;
+                }
+                renderCalendar();
+            });
+        }
+
+        function renderCalendar() {
+            const monthYear = document.getElementById('monthYear');
+            const calendarDays = document.getElementById('calendarDays');
+            
+            const months = ['January', 'February', 'March', 'April', 'May', 'June',
+                          'July', 'August', 'September', 'October', 'November', 'December'];
+            
+            monthYear.textContent = `${months[currentMonth]} ${currentYear}`;
+            
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const daysInPrevMonth = new Date(currentYear, currentMonth, 0).getDate();
+            
+            calendarDays.innerHTML = '';
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            // Previous month days
+            for (let i = firstDay - 1; i >= 0; i--) {
+                const day = daysInPrevMonth - i;
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-day other-month';
+                dayDiv.textContent = day;
+                calendarDays.appendChild(dayDiv);
+            }
+            
+            // Current month days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-day';
+                dayDiv.textContent = day;
+                
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dateObj = new Date(currentYear, currentMonth, day);
+                dateObj.setHours(0, 0, 0, 0);
+                
+                // Check if it's today
+                if (dateObj.getTime() === today.getTime()) {
+                    dayDiv.classList.add('today');
+                }
+                
+                // Check if date is in the past
+                if (dateObj < today) {
+                    dayDiv.classList.add('past');
+                } else {
+                    if (tempSelectedDates.includes(dateStr)) {
+                        dayDiv.classList.add('selected');
+                    }
+                    
+                    dayDiv.onclick = function() {
+                        if (tempSelectedDates.includes(dateStr)) {
+                            tempSelectedDates = tempSelectedDates.filter(d => d !== dateStr);
+                            this.classList.remove('selected');
+                        } else {
+                            tempSelectedDates.push(dateStr);
+                            this.classList.add('selected');
+                        }
+                        updatePreviewDates();
+                    };
+                }
+                
+                calendarDays.appendChild(dayDiv);
+            }
+            
+            // Next month days to complete the grid
+            const totalCells = calendarDays.children.length;
+            const remainingCells = Math.ceil(totalCells / 7) * 7 - totalCells;
+            for (let i = 1; i <= remainingCells; i++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-day other-month';
+                dayDiv.textContent = i;
+                calendarDays.appendChild(dayDiv);
+            }
+            
+            updatePreviewDates();
+        }
+
+        function updatePreviewDates() {
+            const container = document.getElementById('previewDates');
+            if (tempSelectedDates.length === 0) {
+                container.innerHTML = '<small style="color: #666;">No dates selected</small>';
+            } else {
+                const sortedDates = [...tempSelectedDates].sort();
+                container.innerHTML = sortedDates.map(date => {
+                    const formatted = new Date(date).toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                    return `<span class="selected-item" style="margin: 0.25rem;">${formatted}</span>`;
+                }).join('');
+            }
+        }
+
+        function updateSelectedDates() {
+            const container = document.getElementById('selectedDates');
+            if (selectedDates.length === 0) {
+                container.innerHTML = '<small style="color: #666;">No dates selected</small>';
+            } else {
+                container.innerHTML = selectedDates.map(date => {
+                    const formatted = new Date(date).toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                    return `<div class="date-chip">
+                        <span>${formatted}</span>
+                        <span class="remove-date" onclick="removeDate('${date}')">&times;</span>
+                    </div>`;
+                }).join('');
+            }
+        }
+
+        function removeDate(date) {
+            selectedDates = selectedDates.filter(d => d !== date);
+            updateSelectedDates();
+        }
+
+        // Open classroom modal
+        const classroomBtn = document.getElementById('classroomBtn');
+        if (classroomBtn) {
+            classroomBtn.onclick = function() {
+                tempSelectedClassrooms = [...selectedClassrooms];
+                classroomModal.style.display = 'block';
+                
+                // Reload current block's classrooms if data is loaded
+                if (currentBlock && classrooms[currentBlock]) {
+                    loadClassrooms(currentBlock);
+                }
+            };
+        }
+
+        // Open unavailability modal
+        const unavailabilityBtn = document.getElementById('unavailabilityBtn');
+        if (unavailabilityBtn) {
+            unavailabilityBtn.onclick = function() {
+                unavailabilityModal.style.display = 'block';
+                displayTeachers();
+            };
+        }
+
+        // Close modals
+        const closeClassroom = document.getElementById('closeClassroom');
+        if (closeClassroom) {
+            closeClassroom.onclick = function() {
+                classroomModal.style.display = 'none';
+            };
+        }
+
+        const closeUnavailability = document.getElementById('closeUnavailability');
+        if (closeUnavailability) {
+            closeUnavailability.onclick = function() {
+                unavailabilityModal.style.display = 'none';
+            };
+        }
+
+        const cancelClassroom = document.getElementById('cancelClassroom');
+        if (cancelClassroom) {
+            cancelClassroom.onclick = function() {
+                classroomModal.style.display = 'none';
+            };
+        }
+
+        const cancelUnavailability = document.getElementById('cancelUnavailability');
+        if (cancelUnavailability) {
+            cancelUnavailability.onclick = function() {
+                unavailabilityModal.style.display = 'none';
+            };
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target === classroomModal) {
+                classroomModal.style.display = 'none';
+            }
+            if (event.target === unavailabilityModal) {
+                unavailabilityModal.style.display = 'none';
+            }
+            if (event.target === datePickerModal) {
+                datePickerModal.style.display = 'none';
+            }
+        };
+
+        // Select all classrooms in current block
+        function selectAllClassrooms() {
+            const currentClassrooms = classrooms[currentBlock] || [];
+            currentClassrooms.forEach(room => {
+                if (!tempSelectedClassrooms.includes(room)) {
+                    tempSelectedClassrooms.push(room);
+                }
+            });
+            loadClassrooms(currentBlock);
+        }
+
+        // Load classrooms for selected block
+        function loadClassrooms(building) {
+            const grid = document.getElementById('classroomGrid');
+            grid.innerHTML = '';
+
+            const rooms = classrooms[building] || [];
+            rooms.forEach(room => {
+                const div = document.createElement('div');
+                div.className = 'classroom-item';
+                if (tempSelectedClassrooms.includes(room)) {
+                    div.classList.add('selected');
+                }
+                div.textContent = room;
+
+                div.onclick = function() {
+                    this.classList.toggle('selected');
+                    if (tempSelectedClassrooms.includes(room)) {
+                        tempSelectedClassrooms = tempSelectedClassrooms.filter(r => r !== room);
+                    } else {
+                        tempSelectedClassrooms.push(room);
+                    }
+                };
+
+                grid.appendChild(div);
+            });
+        }
+
+        // Confirm classroom selection
+        const confirmClassroom = document.getElementById('confirmClassroom');
+        if (confirmClassroom) {
+            confirmClassroom.onclick = function() {
+                selectedClassrooms = [...tempSelectedClassrooms];
+                updateSelectedClassrooms();
+                classroomModal.style.display = 'none';
+            };
+        }
+
+        // Update selected classrooms display
+        function updateSelectedClassrooms() {
+            const container = document.getElementById('selectedClassrooms');
+            if (selectedClassrooms.length === 0) {
+                container.innerHTML = '<small>No classrooms selected</small>';
+            } else {
+                container.innerHTML = selectedClassrooms.map(classroom => 
+                    `<span class="selected-item">${classroom}<span class="remove-item" onclick="removeClassroom('${classroom}')">&times;</span></span>`
+                ).join('');
+            }
+        }
+
+        // Remove classroom
+        function removeClassroom(classroom) {
+            selectedClassrooms = selectedClassrooms.filter(c => c !== classroom);
+            updateSelectedClassrooms();
+        }
+
+        // Add teacher
+        const addTeacherBtn = document.getElementById('addTeacher');
+        if (addTeacherBtn) {
+            addTeacherBtn.onclick = function() {
+                const input = document.getElementById('teacherSearch');
+                const teacherName = input.value.trim();
+                if (teacherName && !teacherList.includes(teacherName)) {
+                    teacherList.push(teacherName);
+                    input.value = '';
+                    displayTeachers();
+                }
+            };
+        }
+
+        // Display teachers
+        function displayTeachers() {
+            const container = document.getElementById('teacherList');
+            container.innerHTML = '';
+            
+            teacherList.forEach(teacher => {
+                const div = document.createElement('div');
+                div.className = 'teacher-item';
+                if (unavailableTeachers.includes(teacher)) {
+                    div.classList.add('unavailable');
+                }
+                
+                div.innerHTML = `
+                    <span>${teacher}</span>
+                    <button class="toggle-btn" onclick="toggleTeacherAvailability('${teacher}')">
+                        ${unavailableTeachers.includes(teacher) ? 'Mark Available' : 'Mark Unavailable'}
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Toggle teacher availability
+        function toggleTeacherAvailability(teacher) {
+            if (unavailableTeachers.includes(teacher)) {
+                unavailableTeachers = unavailableTeachers.filter(t => t !== teacher);
+            } else {
+                unavailableTeachers.push(teacher);
+            }
+            displayTeachers();
+        }
+
+        // Confirm unavailability changes
+        const confirmUnavailability = document.getElementById('confirmUnavailability');
+        if (confirmUnavailability) {
+            confirmUnavailability.onclick = function() {
+                updateUnavailableTeachers();
+                unavailabilityModal.style.display = 'none';
+            };
+        }
+
+        // Update unavailable teachers display
+        function updateUnavailableTeachers() {
+            const container = document.getElementById('unavailableTeachers');
+            if (unavailableTeachers.length === 0) {
+                container.innerHTML = '<small>No teachers marked unavailable</small>';
+            } else {
+                container.innerHTML = unavailableTeachers.map(teacher => 
+                    `<span class="selected-item">${teacher}<span class="remove-item" onclick="removeUnavailableTeacher('${teacher}')">&times;</span></span>`
+                ).join('');
+            }
+        }
+
+        // Remove unavailable teacher
+        function removeUnavailableTeacher(teacher) {
+            unavailableTeachers = unavailableTeachers.filter(t => t !== teacher);
+            updateUnavailableTeachers();
+        }
+
+        // Form submission
+        const examForm = document.getElementById('examForm');
+        if (examForm) {
+            examForm.onsubmit = function(e) {
+                e.preventDefault();
+                
+                if (selectedDates.length === 0) {
+                    alert('Please select at least one exam date!');
+                    return;
+                }
+
+                const formData = {
+                    examName: document.getElementById('examName').value,
+                    examDates: selectedDates,
+                    selectedClassrooms: selectedClassrooms,
+                    unavailableTeachers: unavailableTeachers
+                };
+                
+                console.log('Exam Data:', formData);
+                alert('Exam created successfully!');
+            };
+        }
+
+        // Initialize with some sample teachers (removed - now loaded from database)
+    </script>
+</body>
+</html>

@@ -1,5 +1,7 @@
 //Importing the models
 const Users = require("../models/userModel");
+const classroom = require('../models/classroomModel');
+
 
 exports.addTeacher = async (req, res) => {
   try {
@@ -27,8 +29,6 @@ exports.addTeacher = async (req, res) => {
 };
 
 exports.loadClassrooms = async (req,res)=>{
-    const classroom = require('../models/classroomModel');
-
         try {
         const classes = await classroom.find({}, { name: 1, building: 1, _id: 0 });
 
@@ -41,3 +41,24 @@ exports.loadClassrooms = async (req,res)=>{
         res.status(500).json({ message: "Server error" });
     }
 }
+
+// In your controller file (e.g., coeController.js)
+
+exports.getTeachers = async (req, res) => {
+  try {
+    // Fetch only users with role 'Teacher'
+    const teachers = await Users.find(
+      { role: 'Teacher' }, 
+      { name: 1, userId: 1, department: 1, _id: 0 }
+    ).sort({ name: 1 }); // Sort alphabetically by name
+
+    if (!teachers || teachers.length === 0) {
+      return res.status(404).json({ message: "No teachers found" });
+    }
+
+    res.json(teachers);
+  } catch (error) {
+    console.error("Error fetching teachers:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
