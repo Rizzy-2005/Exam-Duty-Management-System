@@ -1,3 +1,67 @@
+let createdExamId = null;
+
+        // Show success popup
+        function showSuccessPopup(examId) {
+            createdExamId = examId;
+            document.getElementById('successPopup').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Show error popup
+        function showErrorPopup(errorMessage = 'Failed to create exam. Please try again.') {
+            document.getElementById('errorMessage').textContent = errorMessage;
+            document.getElementById('errorPopup').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close popup
+        function closePopup(popupId) {
+            document.getElementById(popupId).classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Redirect to allocation page
+       function redirectToAllocation() {
+    if (createdExamId) {
+        // Using Express router path parameter: /allocations/:id
+        window.location.href = `/coe/allocations/${createdExamId}`;
+        
+        // Note: Since you're using Express router with path: '/allocations/:id'
+        // and the route is under '/coe' prefix (based on your createExam endpoint),
+        // the full URL will be: /coe/allocations/{examId}
+        
+    } else {
+        console.error('No exam ID available for redirection');
+        // Fallback: redirect to home or exam list page
+        showErrorPopup('Unable to redirect. Exam ID not found.');
+    }
+}
+
+        // Retry exam creation
+        function retryExamCreation() {
+            closePopup('errorPopup');
+            // Trigger your form submission again or focus back on the form
+            // document.getElementById('examForm').requestSubmit();
+        }
+
+        // Close popup when clicking outside
+        document.querySelectorAll('.popup-overlay').forEach(overlay => {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closePopup(this.id);
+                }
+            });
+        });
+
+        // Close popup with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.popup-overlay.active').forEach(popup => {
+                    closePopup(popup.id);
+                });
+            }
+        });
+
 const home = document.getElementById('home');
         if (home) {
             home.addEventListener('click', () => {
@@ -379,6 +443,8 @@ const home = document.getElementById('home');
             }
         }
 
+        
+
         function updateSelectedDates() {
             const container = document.getElementById('selectedDates');
             const dates = Object.keys(selectedDatesWithSessions).sort();
@@ -621,25 +687,28 @@ const home = document.getElementById('home');
         }
 
         // Form submission
-        const examForm = document.getElementById('examForm');
-        if (examForm) {
-            examForm.onsubmit = async function(e) {
-                e.preventDefault();
-                
-                if (Object.keys(selectedDatesWithSessions).length === 0) {
-                    alert('Please select at least one exam date with sessions!');
-                    return;
-                }
+        // Form submission
+// Form submission
+const examForm = document.getElementById('examForm');
+if (examForm) {
+    examForm.onsubmit = async function(e) {
+        e.preventDefault();
+        
+        if (Object.keys(selectedDatesWithSessions).length === 0) {
+            showErrorPopup('Please select at least one exam date with sessions!');
+            return;
+        }
 
-                const formData = {
-                    examName: document.getElementById('examName').value,
-                    examDatesWithSessions: selectedDatesWithSessions,
-                    selectedClassrooms: selectedClassrooms,
-                    unavailableTeachers: unavailableTeachers
-                };
-                
-                console.log('Exam Data:', formData);
-                try {
+        const formData = {
+            examName: document.getElementById('examName').value,
+            examDatesWithSessions: selectedDatesWithSessions,
+            selectedClassrooms: selectedClassrooms,
+            unavailableTeachers: unavailableTeachers
+        };
+        
+        console.log('Exam Data:', formData);
+        
+        try {
             const response = await fetch('/coe/createExam', {
                 method: 'POST',
                 headers: {
@@ -649,16 +718,26 @@ const home = document.getElementById('home');
             });
 
             const result = await response.json();
+            console.log('Full Server Response:', result);
 
-            if (response.ok) {
-                alert('Exam created successfully!');
-                console.log('Server Response:', result);
+            if (response.ok && result.success) {
+                // Extract exam ID from response - your backend returns it in result.exam._id
+                const examId = result.exam?._id || result.examId || result.id;
+                
+                console.log('Extracted Exam ID:', examId);
+                
+                if (examId) {
+                    showSuccessPopup(examId);
+                } else {
+                    console.error('No exam ID in response:', result);
+                    showErrorPopup('Exam created but ID not found. Please refresh and check exam list.');
+                }
             } else {
-                alert(`Error: ${result.message || 'Failed to create exam.'}`);
+                showErrorPopup(result.message || 'Failed to create exam. Please try again.');
             }
         } catch (error) {
             console.error('Fetch error:', error);
-            alert('An error occurred while creating the exam.');
+            showErrorPopup('Network error. Please check your connection and try again.');
         }
     };
 }
