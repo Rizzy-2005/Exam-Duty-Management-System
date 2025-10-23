@@ -262,7 +262,8 @@ function closeModal() {
 
 async function sendSwapRequest() {
   const message = document.getElementById("swapMessage").value;
-  const scheduleId = getScheduleIdFromURL();
+  const fromAllocationId = getScheduleIdFromURL(); // This is YOUR allocation
+  const toAllocationId = selectedAllocation.id; // This is THEIR allocation
   const toTeacherId = selectedAllocation.teacherId._id || selectedAllocation.teacherId;
   const examId = selectedAllocation.exam.id._id || selectedAllocation.exam.id;
 
@@ -277,7 +278,8 @@ async function sendSwapRequest() {
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({ 
-        scheduleId,  
+        fromAllocationId,  // YOUR allocation
+        toAllocationId,    // THEIR allocation
         toTeacherId: toTeacherId, 
         message: message, 
         examId: examId 

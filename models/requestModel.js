@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 
 const requestSchema = new mongoose.Schema({
   examId: { type: mongoose.Schema.Types.ObjectId, ref: 'exams', required: true },
-  allocationId: { type: mongoose.Schema.Types.ObjectId, ref: 'allocations', required: true },
+  fromAllocationId: { type: mongoose.Schema.Types.ObjectId, ref: 'allocations', required: true }, // ADD THIS
+  toAllocationId: { type: mongoose.Schema.Types.ObjectId, ref: 'allocations', required: true }, // RENAME allocationId
   fromTeacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true },
   toTeacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'users', default: null }, 
   reason: { type: String, required: true, trim: true },
