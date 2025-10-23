@@ -4,7 +4,7 @@ const Class = require('../models/classroomModel')
 
 exports.getSchedule = async (req, res) => {
 try {
-    const teacherId = req.body.teacherId || req.params.teacherId || req.user?.id;
+    const teacherId = req.body.teacherId;
 
     if (!teacherId) {
         return res.status(400).json({
@@ -23,7 +23,6 @@ try {
         const currentDate = new Date();
         const examDate = new Date(schedule.date);
         
-
         const isAttended = examDate < currentDate;
         
         return {
@@ -79,7 +78,7 @@ exports.getAllocationDetails = async (req, res) => {
 
     const examDate = new Date(allocation.date);
 
-    // ✅ Fetch allocations for the same date and all upcoming dates
+    //Fetch allocations for the same date and all upcoming dates
     const relatedAllocations = await schedules.find({
       date: { $gte: examDate }   // same day and future days
     })
@@ -88,12 +87,13 @@ exports.getAllocationDetails = async (req, res) => {
     .populate('examId', 'title')
     .sort({ date: 1, session: 1 });
 
-    // ✅ Transform data with full date info
+    //Transform data with full date info
     const transformed = relatedAllocations.map(a => {
       const dateObj = new Date(a.date);
       return {
         id: a._id,
         teacher: a.teacherId.name,
+        teacherId: a.teacherId,
         date: dateObj.toISOString().split('T')[0],  // YYYY-MM-DD
         dateDay: dateObj.getDate(),
         dateMonth: dateObj.toLocaleString('en-US', { month: 'short' }),
@@ -103,7 +103,8 @@ exports.getAllocationDetails = async (req, res) => {
           building: a.classroomId.building
         },
         exam: {
-          title: a.examId.title
+          title: a.examId.title,
+          id: a.examId
         },
         session: a.session === 'FN' ? 'Morning' : 'Afternoon'
       };

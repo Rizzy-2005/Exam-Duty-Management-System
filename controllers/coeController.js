@@ -25,3 +25,19 @@ exports.addTeacher = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+exports.loadClassrooms = async (req,res)=>{
+    const classroom = require('../models/classroomModel');
+
+        try {
+        const classes = await classroom.find({}, { name: 1, building: 1, _id: 0 });
+
+        if (!classes || classes.length === 0) {
+            return res.status(404).json({ message: "No classrooms were found" });
+        }
+        res.json(classes);
+    } catch (error) {
+        console.error("Error loading classrooms:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+}

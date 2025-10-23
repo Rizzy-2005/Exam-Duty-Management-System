@@ -108,7 +108,7 @@ try {
     const teacherId = localStorage.getItem('userId');
     console.log(JSON.stringify(teacherId));
 
-    const response = await fetch(`http://localhost:3000/teacher/getSchedule`, {
+    const response = await fetch(`/teacher/getSchedule`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
