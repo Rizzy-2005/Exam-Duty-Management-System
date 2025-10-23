@@ -63,7 +63,7 @@ app.use(express.static(path.join(__dirname, "./views")));
 
 //HTML page routes frrom react
 app.get('/coeHome', checkSession, (req, res) => {
-  res.sendFile(path.join(__dirname, "./views/coeHome copy.html"));
+  res.sendFile(path.join(__dirname, "./views/coeHome.html"));
 });
 
 app.get('/teacherHome', checkSession, (req, res) => {
