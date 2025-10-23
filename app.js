@@ -45,7 +45,7 @@ app.use('/requests',reqRoutes);
 const PORT = 5000;
 
 app.get('/coeHome', checkSession, (req,res) => {
-  res.redirect("/coeHome.html");
+  res.redirect("/coeHome copy.html");
 });
 
 app.get('/teacherHome', checkSession, (req,res) => {
