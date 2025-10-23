@@ -146,8 +146,8 @@
       <h1>Exam Allocations</h1>
     </div>
     <div class="user-info">
-      <span id="userName">Prof. Johnson</span>
-      <div class="user-avatar" id="userAvatar">PJ</div>
+      <span id="userName"></span>
+      <div class="user-avatar" id="userAvatar"></div>
     </div>
   </header>
 
@@ -223,6 +223,7 @@ async function loadAllocations() {
 
     if (result.success && result.data.length > 0) {
       // Add date components for display
+      loadUserInfo(result.name)
       allAllocations = result.data.map(item => {
         const dateObj = new Date(item.date);
         return {
@@ -393,8 +394,8 @@ function goBack() {
   window.history.back();
 }
 
-function loadUserInfo() {
-  const userName = localStorage.getItem('teacherName') || 'Prof. Johnson';
+// Load user info
+function loadUserInfo(userName) {
   const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
   document.getElementById('userName').textContent = userName;
   document.getElementById('userAvatar').textContent = userInitials;
