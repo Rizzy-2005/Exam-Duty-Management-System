@@ -421,12 +421,9 @@ function loadUserInfo(userName) {
   document.getElementById('userAvatar').textContent = userInitials;
 }
 
-document.getElementById('userAvatar').addEventListener('click', function() {
-  const confirmed = confirm('Do you want to logout?');
-  if (confirmed) {
-    localStorage.clear();
-    window.location.href = '/login.html';
-  }
+document.getElementById('userAvatar').addEventListener('click', function confirmLogout() {
+  fetch('/login/logout', { credentials: 'include' });
+  window.location.href = 'http://localhost:3000';
 });
 
 document.getElementById("dateFilter").addEventListener("change", (e) => {

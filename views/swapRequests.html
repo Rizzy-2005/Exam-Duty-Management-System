@@ -400,8 +400,8 @@ function hideLogout() {
 }
 
 function confirmLogout() {
-    localStorage.clear();
-    window.location.href = '/login.html';
+  fetch('/login/logout', { credentials: 'include' });
+  window.location.href = 'http://localhost:3000';
 }
 </script>
 </body>
