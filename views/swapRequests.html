@@ -269,6 +269,10 @@ function handleAccept(requestId, requesterName) {
     
     document.getElementById('modalTitle').textContent = 'Accept Swap Request';
     document.getElementById('modalMessage').textContent = `Are you sure you want to accept the swap request from ${requesterName}?`;
+    
+    const confirmBtn = document.getElementById('confirmBtn');
+    confirmBtn.className = 'modal-btn btn-confirm btn-accept';
+    
     document.getElementById('confirmationModal').classList.add('show');
 }
 
@@ -282,6 +286,10 @@ function handleReject(requestId, requesterName) {
     
     document.getElementById('modalTitle').textContent = 'Reject Swap Request';
     document.getElementById('modalMessage').textContent = `Are you sure you want to reject the swap request from ${requesterName}?`;
+    
+    const confirmBtn = document.getElementById('confirmBtn');
+    confirmBtn.className = 'modal-btn btn-confirm btn-reject-confirm';
+    
     document.getElementById('confirmationModal').classList.add('show');
 }
 
@@ -327,11 +335,6 @@ async function executeAction() {
         console.error(`Error ${action.type}ing swap:`, error);
         showToast(`An error occurred. Please try again.`, 'error');
     }
-    
-    // Refresh home page count if user is on home
-    if (window.location.pathname.includes('home.html')) {
-        updatePendingRequestCount();
-    }
 
     pendingAction = null;
 }
@@ -359,31 +362,13 @@ function updateRequestsCount(count) {
     document.getElementById('requestsCount').textContent = `${count} Request${count !== 1 ? 's' : ''}`;
 }
 
-async function loadUserInfo() {
-    try {
-        const response = await fetch('http://localhost:5000/teacher/getUserInfo', {
-            method: 'GET',
-            credentials: 'include'
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-            const name = result.name;
-            const initials = name.split(' ').map(n => n[0]).join('').toUpperCase();
-
-            document.getElementById('userName').textContent = name;
-            document.getElementById('userAvatar').textContent = initials;
-        } else {
-            // redirect to login if not authenticated
-            window.location.href = '/login.html';
-        }
-    } catch (err) {
-        console.error('Error loading user info:', err);
-        window.location.href = '/login.html';
-    }
+function loadUserInfo() {
+    const userName = localStorage.getItem('teacherName') || 'Prof. Johnson';
+    const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
+    
+    document.getElementById('userName').textContent = userName;
+    document.getElementById('userAvatar').textContent = userInitials;
 }
-
 
 function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
