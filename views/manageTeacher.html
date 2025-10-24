@@ -376,7 +376,7 @@
     </div>
     <nav class="nav-menu">
       <a href="coeHome.html">Home</a>
-      <a href="#logout" onclick="confirmLogout()">Logout</a>
+      <a href="#logout" id="logout" onclick="confirmLogout()">Logout</a>
     </nav>
   </header>
 
@@ -496,11 +496,6 @@
 
     function showStep1() { step1.style.display='flex'; step2.style.display='none'; }
     function showStep2() { step1.style.display='none'; step2.style.display='flex'; }
-
-    function confirmLogout() {
-        fetch('/login/logout', { credentials: 'include' });
-        window.location.href = 'http://localhost:3000';
-    }
 
     openModalBtn.onclick = () => { teacherModal.style.display='flex'; showStep1(); };
     cancelBtn.onclick = () => { teacherModal.style.display='none'; };
