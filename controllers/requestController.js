@@ -172,3 +172,75 @@ exports.getPendingCount = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// Add this to your request controller
+
+exports.getHistory = async (req, res) => {
+  try {
+    const teacherId = req.session.user.id;
+    
+    // Get all requests where teacher is either sender OR receiver, and status is Approved/Rejected
+    const msgs = await requests
+      .find({ 
+        $or: [
+          { fromTeacherId: teacherId },
+          { toTeacherId: teacherId }
+        ],
+        status: { $in: ['Approved', 'Rejected'] }
+      })
+      .populate('fromTeacherId', 'name department')
+      .populate('toTeacherId', 'name department')
+      .populate({
+        path: 'fromAllocationId',
+        populate: { path: 'classroomId', select: 'name building' }
+      })
+      .populate({
+        path: 'toAllocationId',
+        populate: { path: 'classroomId', select: 'name building' }
+      })
+      .sort({ updatedAt: -1 });
+
+    // Transform data
+    const transformed = msgs.map(msg => {
+      const isSentByMe = msg.fromTeacherId._id.toString() === teacherId.toString();
+      
+      return {
+        id: msg._id,
+        type: isSentByMe ? 'sent' : 'received',
+        requesterName: msg.fromTeacherId.name,
+        requesterDepartment: msg.fromTeacherId.department || 'N/A',
+        receiverName: msg.toTeacherId.name,
+        requestedAt: msg.createdAt,
+        respondedAt: msg.updatedAt,
+        status: msg.status,
+        reason: msg.reason || '',
+        yourDuty: {
+          dateDay: new Date(msg.toAllocationId.date).getDate(),
+          dateMonth: new Date(msg.toAllocationId.date).toLocaleString('en-US', { month: 'short' }),
+          session: msg.toAllocationId.session === 'FN' ? 'Morning' : 'Afternoon',
+          classroom: {
+            number: msg.toAllocationId.classroomId.name,
+            building: msg.toAllocationId.classroomId.building
+          }
+        },
+        theirDuty: {
+          dateDay: new Date(msg.fromAllocationId.date).getDate(),
+          dateMonth: new Date(msg.fromAllocationId.date).toLocaleString('en-US', { month: 'short' }),
+          session: msg.fromAllocationId.session === 'FN' ? 'Morning' : 'Afternoon',
+          classroom: {
+            number: msg.fromAllocationId.classroomId.name,
+            building: msg.fromAllocationId.classroomId.building
+          }
+        }
+      };
+    });
+
+    res.status(200).json({ 
+      success: true, 
+      data: transformed
+    });
+  } catch (error) {
+    console.error('Error fetching request history:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
