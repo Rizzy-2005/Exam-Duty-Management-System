@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Request History</title>
+<link rel="stylesheet" href="swapRequests.css">
+<style>
+.search-container {
+    margin: 20px 0;
+    padding: 0 20px;
+}
+
+.search-box {
+    width: 100%;
+    padding: 12px 20px 12px 45px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cpath d='m21 21-4.35-4.35'%3E%3C/path%3E%3C/svg%3E") no-repeat 15px center;
+}
+
+.search-box:focus {
+    outline: none;
+    border-color: #4A90E2;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-approved {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-rejected {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.history-item {
+    position: relative;
+}
+
+.history-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 12px 12px 0 0;
+}
+
+.history-item.approved::before {
+    background: linear-gradient(90deg, #28a745, #20c997);
+}
+
+.history-item.rejected::before {
+    background: linear-gradient(90deg, #dc3545, #fd7e14);
+}
+
+.response-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e9ecef;
+}
+
+.response-time {
+    color: #6c757d;
+    font-size: 13px;
+}
+
+.stats-row {
+    display: flex;
+    gap: 15px;
+    margin: 20px 0;
+    padding: 0 20px;
+}
+
+.stat-card {
+    flex: 1;
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.stat-number.approved {
+    color: #28a745;
+}
+
+.stat-number.rejected {
+    color: #dc3545;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.no-results {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.no-results-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<header class="header fade-in">
+    <div class="header-left">
+        <a href="#" class="back-button" onclick="goBack()">
+            ←
+        </a>
+        <h1>Request History</h1>
+    </div>
+    <div class="user-info">
+        <span id="userName">Loading...</span>
+        <div class="user-avatar" id="userAvatar">--</div>
+    </div>
+</header>
+
+<!-- Stats Row -->
+<div class="stats-row fade-in" id="statsRow" style="display: none;">
+    <div class="stat-card">
+        <div class="stat-number approved" id="approvedCount">0</div>
+        <div class="stat-label">Accepted</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number rejected" id="rejectedCount">0</div>
+        <div class="stat-label">Rejected</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number" id="totalCount">0</div>
+        <div class="stat-label">Total</div>
+    </div>
+</div>
+
+<!-- Search Container -->
+<div class="search-container fade-in" id="searchContainer" style="display: none;">
+    <input 
+        type="text" 
+        id="searchBox" 
+        class="search-box" 
+        placeholder="Search by name, department, classroom..."
+        onkeyup="handleSearch()"
+    >
+</div>
+
+<!-- Requests Container -->
+<div class="requests-container fade-in">
+    <div class="requests-header">
+        <h2>All Requests</h2>
+        <span class="requests-count" id="requestsCount">Loading...</span>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="filter-buttons">
+        <button class="filter-btn active" onclick="filterHistory('all')">All</button>
+        <button class="filter-btn" onclick="filterHistory('approved')">Accepted</button>
+        <button class="filter-btn" onclick="filterHistory('rejected')">Rejected</button>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading request history...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" class="error-state" style="display: none;">
+        <p>Failed to load history. Please try again.</p>
+        <button onclick="loadHistory()" class="retry-btn">Retry</button>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="empty-state" style="display: none;">
+        <div class="empty-icon">📋</div>
+        <p>No request history yet.</p>
+    </div>
+
+    <!-- No Results State -->
+    <div id="noResultsState" class="no-results" style="display: none;">
+        <div class="no-results-icon">🔍</div>
+        <p>No requests match your search.</p>
+    </div>
+
+    <!-- History Grid -->
+    <div class="requests-grid" id="historyGrid" style="display: none;">
+        <!-- History items will be populated here -->
+    </div>
+</div>
+
+<!-- Actions Bar -->
+<div class="actions-bar fade-in">
+    <a href="/home.html" class="action-btn btn-secondary">
+        🏠 Back to Home
+    </a>
+</div>
+</div>
+
+<!-- Logout Modal -->
+<div class="modal-overlay" id="logoutModal">
+    <div class="modal">
+        <h3>Confirm Logout</h3>
+        <p>Are you sure you want to logout?</p>
+        <div class="modal-buttons">
+            <button class="modal-btn btn-cancel" onclick="hideLogout()">Cancel</button>
+            <button class="modal-btn btn-confirm" onclick="confirmLogout()">Logout</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+    <span id="toastMessage"></span>
+</div>
+
+<script>
+let allHistory = [];
+let filteredHistory = [];
+let currentFilter = 'all';
+
+// Load history on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadHistory();
+    loadUserInfo();
+});
+
+// Fetch history from backend
+async function loadHistory() {
+    const loadingState = document.getElementById('loadingState');
+    const errorState = document.getElementById('errorState');
+    const emptyState = document.getElementById('emptyState');
+    const historyGrid = document.getElementById('historyGrid');
+    const searchContainer = document.getElementById('searchContainer');
+    const statsRow = document.getElementById('statsRow');
+
+    try {
+        loadingState.style.display = 'block';
+        errorState.style.display = 'none';
+        emptyState.style.display = 'none';
+        historyGrid.style.display = 'none';
+        searchContainer.style.display = 'none';
+        statsRow.style.display = 'none';
+
+        const response = await fetch(`http://localhost:5000/requests/history`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+
+        const result = await response.json();
+        console.log('History result:', result);
+        
+        loadingState.style.display = 'none';
+
+        if (result.success && result.data.length > 0) {
+            allHistory = result.data;
+            filteredHistory = allHistory;
+            renderHistory(allHistory);
+            updateRequestsCount(allHistory.length);
+            updateStats(allHistory);
+            historyGrid.style.display = 'grid';
+            searchContainer.style.display = 'block';
+            statsRow.style.display = 'flex';
+        } else {
+            emptyState.style.display = 'block';
+            updateRequestsCount(0);
+        }
+
+    } catch (error) {
+        console.error('Error loading history:', error);
+        loadingState.style.display = 'none';
+        errorState.style.display = 'block';
+    }
+}
+
+// Render history items
+function renderHistory(history) {
+    const historyGrid = document.getElementById('historyGrid');
+    const noResultsState = document.getElementById('noResultsState');
+    
+    if (history.length === 0) {
+        historyGrid.style.display = 'none';
+        noResultsState.style.display = 'block';
+        return;
+    }
+    
+    historyGrid.style.display = 'grid';
+    noResultsState.style.display = 'none';
+    historyGrid.innerHTML = '';
+
+    history.forEach((item, index) => {
+        const historyItem = document.createElement('div');
+        historyItem.className = `request-item history-item ${item.status.toLowerCase()} stagger-in`;
+        historyItem.style.animationDelay = `${index * 0.05}s`;
+
+        const displayName = item.type === 'sent' ? item.receiverName : item.requesterName;
+        const typeLabel = item.type === 'sent' ? '📤 Sent to' : '📥 Received from';
+        
+        historyItem.innerHTML = `
+            <div class="request-header">
+                <div class="requester-info">
+                    <div class="requester-avatar">${getInitials(displayName)}</div>
+                    <div class="requester-details">
+                        <div class="requester-name">${typeLabel} ${displayName}</div>
+                        <div class="requester-department">${item.requesterDepartment}</div>
+                    </div>
+                </div>
+                <div class="request-time">${formatTimeAgo(item.requestedAt)}</div>
+            </div>
+
+            <div class="swap-details">
+                <div class="swap-column">
+                    <div class="swap-label">Your Duty</div>
+                    <div class="duty-card your-duty">
+                        <div class="date-info-small">
+                            <div class="date-day">${item.yourDuty.dateDay}</div>
+                            <div class="date-month">${item.yourDuty.dateMonth}</div>
+                        </div>
+                        <div class="duty-details">
+                            <div class="session-badge session-${item.yourDuty.session.toLowerCase()}">${item.yourDuty.session}</div>
+                            <div class="classroom-text">${item.yourDuty.classroom.number} - ${item.yourDuty.classroom.building}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="swap-arrow">⇄</div>
+
+                <div class="swap-column">
+                    <div class="swap-label">Their Duty</div>
+                    <div class="duty-card their-duty">
+                        <div class="date-info-small">
+                            <div class="date-day">${item.theirDuty.dateDay}</div>
+                            <div class="date-month">${item.theirDuty.dateMonth}</div>
+                        </div>
+                        <div class="duty-details">
+                            <div class="session-badge session-${item.theirDuty.session.toLowerCase()}">${item.theirDuty.session}</div>
+                            <div class="classroom-text">${item.theirDuty.classroom.number} - ${item.theirDuty.classroom.building}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            ${item.reason ? `<div class="request-reason"><strong>Reason:</strong> ${item.reason}</div>` : ''}
+
+            <div class="response-info">
+                <span class="status-badge status-${item.status.toLowerCase()}">${item.status}</span>
+                <span class="response-time">Responded ${formatTimeAgo(item.respondedAt)}</span>
+            </div>
+        `;
+
+        historyGrid.appendChild(historyItem);
+    });
+}
+
+// Filter history
+function filterHistory(type) {
+    const buttons = document.querySelectorAll('.filter-btn');
+    
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    currentFilter = type;
+
+    let filtered = allHistory;
+    
+    switch(type) {
+        case 'approved':
+            filtered = allHistory.filter(h => h.status === 'Approved');
+            break;
+        case 'rejected':
+            filtered = allHistory.filter(h => h.status === 'Rejected');
+            break;
+        default:
+            filtered = allHistory;
+    }
+
+    filteredHistory = filtered;
+    
+    // Apply search if there's a search term
+    const searchTerm = document.getElementById('searchBox').value;
+    if (searchTerm) {
+        filtered = searchInHistory(filtered, searchTerm);
+    }
+    
+    renderHistory(filtered);
+    updateRequestsCount(filtered.length);
+}
+
+// Search functionality
+function handleSearch() {
+    const searchTerm = document.getElementById('searchBox').value.toLowerCase().trim();
+    
+    let searchBase = filteredHistory;
+    
+    if (!searchTerm) {
+        renderHistory(searchBase);
+        updateRequestsCount(searchBase.length);
+        return;
+    }
+    
+    const results = searchInHistory(searchBase, searchTerm);
+    renderHistory(results);
+    updateRequestsCount(results.length);
+}
+
+function searchInHistory(historyArray, searchTerm) {
+    return historyArray.filter(item => {
+        const nameMatch = item.requesterName.toLowerCase().includes(searchTerm);
+        const deptMatch = item.requesterDepartment.toLowerCase().includes(searchTerm);
+        const yourClassroom = `${item.yourDuty.classroom.number} ${item.yourDuty.classroom.building}`.toLowerCase();
+        const theirClassroom = `${item.theirDuty.classroom.number} ${item.theirDuty.classroom.building}`.toLowerCase();
+        const classroomMatch = yourClassroom.includes(searchTerm) || theirClassroom.includes(searchTerm);
+        const reasonMatch = item.reason && item.reason.toLowerCase().includes(searchTerm);
+        
+        return nameMatch || deptMatch || classroomMatch || reasonMatch;
+    });
+}
+
+// Update statistics
+function updateStats(history) {
+    const approved = history.filter(h => h.status === 'Approved').length;
+    const rejected = history.filter(h => h.status === 'Rejected').length;
+    
+    document.getElementById('approvedCount').textContent = approved;
+    document.getElementById('rejectedCount').textContent = rejected;
+    document.getElementById('totalCount').textContent = history.length;
+}
+
+// Utility functions
+function getInitials(name) {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+}
+
+function formatTimeAgo(timestamp) {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffDays < 30) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+}
+
+function updateRequestsCount(count) {
+    document.getElementById('requestsCount').textContent = `${count} Request${count !== 1 ? 's' : ''}`;
+}
+
+async function loadUserInfo() {
+    try {
+        const response = await fetch('http://localhost:5000/teacher/getUserInfo', {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            const name = result.name;
+            const initials = name.split(' ').map(n => n[0]).join('').toUpperCase();
+
+            document.getElementById('userName').textContent = name;
+            document.getElementById('userAvatar').textContent = initials;
+        } else {
+            window.location.href = '/login.html';
+        }
+    } catch (err) {
+        console.error('Error loading user info:', err);
+        window.location.href = '/login.html';
+    }
+}
+
+function goBack() {
+    window.history.back();
+}
+
+// Logout functionality
+document.getElementById('userAvatar').addEventListener('click', function() {
+    document.getElementById('logoutModal').classList.add('show');
+});
+
+function hideLogout() {
+    document.getElementById('logoutModal').classList.remove('show');
+}
+
+function confirmLogout() {
+    fetch('/login/logout', { credentials: 'include' });
+    window.location.href = 'http://localhost:3000';
+}
+</script>
+</body>
+</html>
