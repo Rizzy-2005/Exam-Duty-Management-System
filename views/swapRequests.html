@@ -363,13 +363,31 @@ function updateRequestsCount(count) {
     document.getElementById('requestsCount').textContent = `${count} Request${count !== 1 ? 's' : ''}`;
 }
 
-function loadUserInfo() {
-    const userName = localStorage.getItem('teacherName') || 'Prof. Johnson';
-    const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
-    
-    document.getElementById('userName').textContent = userName;
-    document.getElementById('userAvatar').textContent = userInitials;
+async function loadUserInfo() {
+    try {
+        const response = await fetch('http://localhost:5000/teacher/getUserInfo', {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            const name = result.name;
+            const initials = name.split(' ').map(n => n[0]).join('').toUpperCase();
+
+            document.getElementById('userName').textContent = name;
+            document.getElementById('userAvatar').textContent = initials;
+        } else {
+            // redirect to login if not authenticated
+            window.location.href = '/login.html';
+        }
+    } catch (err) {
+        console.error('Error loading user info:', err);
+        window.location.href = '/login.html';
+    }
 }
+
 
 function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
