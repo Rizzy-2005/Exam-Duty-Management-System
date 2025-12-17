@@ -16,7 +16,7 @@ const checkSession = require('./middlewares/authMiddleware');
 const app = express();
 app.use(express.json());
 
-//CORS configuration - MUST come BEFORE session
+//CORS configuration
 const allowedOrigins = ['http://localhost:3000', 'http://localhost:5000'];
 
 app.use(cors({

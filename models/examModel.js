@@ -1,17 +1,17 @@
 const mongoose = require("mongoose");
 
 const examSchema = new mongoose.Schema({
-  name: { type: String, required: true },                // Name of the exam
-  dates: [{ type: Date, required: true }],               // Dates on which the exam happens
+  name: { type: String, required: true },              
+  dates: [{ type: Date, required: true }],              
   sessions: {
     type: [String],
-    enum: ["FN", "AN"],                                  // Forenoon / Afternoon
+    enum: ["FN", "AN"],                                  
     default: ["FN", "AN"]
   },
   expectedStudents: {
     type: Map,
     of: Number,
-    default: {}                                           // Stores expected student count per (date + session)
+    default: {}                                           
   },
 });
 

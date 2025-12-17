@@ -11,7 +11,6 @@ router.get('/getTeachers', coeController.getTeachers);
 router.post('/createExam', coeController.createExam);
 router.get('/getExams',coeController.getExams);
 router.get('/allocations/:id', (req, res) => {
-console.log('[ROUTE HIT] /allocations/:id → ID:', req.params.id);
   res.sendFile(path.join(__dirname, '../views/viewAllocation.html'));
 });
 router.get('/getAllocations/:examId', coeController.getAllocations);
@@ -22,7 +21,6 @@ router.delete("/teachers/:id", coeController.deleteTeacher);
 router.get("/classrooms", coeController.getAllClassrooms);
 router.post("/addClassroom", coeController.addClassroom);
 router.put("/updateClassroom/:id", coeController.updateClassroom);
-
 
 
 module.exports = router;
